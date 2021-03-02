@@ -37,10 +37,10 @@
             android:hint="password" />
 
     <Button
-            android:text="Button"
-            android:layout_width="match_parent"
+            android:text="Log in"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/button"
-            android:layout_margin="20dp"/>
+            android:layout_margin="20dp" />
 
 </LinearLayout>
