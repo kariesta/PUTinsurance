@@ -1,5 +1,7 @@
 package com.example.putinsurance
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -7,6 +9,7 @@ import android.view.View
 import android.widget.EditText
 import com.android.volley.Request
 import com.android.volley.RequestQueue
+import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import java.math.BigInteger
@@ -23,34 +26,67 @@ class LoginActivity : AppCompatActivity() {
     // private val TAG = "LOGIN"
     private var queue : RequestQueue? = null
 
+    // shared preferences
+    lateinit var preferences : SharedPreferences
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
         email = findViewById(R.id.editTextTextEmailAddress)
         password = findViewById(R.id.editTextTextPassword)
+
+        preferences = this.getSharedPreferences("com.example.putinsurance", Context.MODE_PRIVATE)
     }
 
     // TODO: check if SINGLETON of
     // TODO: How to get password hash?
     // TODO: How to send parameters for post method
     fun logIn(view: View) {
+        // Shared Preferences
+
+        val emailText =  email.text.toString()
+        val passwordHash = passwordToHashMD5(password.text.toString())
+
+        validateUserByServer(emailText, passwordHash)
+
+
+
+
+
+
+
+    }
+
+    fun validateUserByServer(email : String, passwordHash : String) {
+
+        // url
+        val parameters = "em=$email&ph=$passwordHash"
+        val url = "http://$ip:$port/methodPostRemoteLogin?$parameters"
+
+        sendPostRequest(url)
+
+    }
+
+    private fun sendPostRequest(url : String) {
+        // Request queue
         queue = Volley.newRequestQueue(this) // TODO: Check if we can only have one queue per activity
 
-        val parameters = "em=${email.text}&ph=${passwordToHashMD5(password.text.toString())}"
-        val url = "http://$ip:$port/methodPostRemoteLogin?${parameters}"
-        // val url = "http://$ip:$port/methodPostRemoteLogin?em=joe@gmail.com&ph=fa8e62d66b250b28819614c9c64f8f51"
-
-        val stringRequest = StringRequest(Request.Method.POST, url,
+        // stringrequest
+        val jsonRequest = JsonObjectRequest(Request.Method.POST, url, null,
             { response ->
                 // TODO: Send to next activity
-                Log.d("logIn", "response ${response.toString()}")
+                Log.d("logIn", "response $response")
             },
             { Log.d("logIn", "FAILED TO CONNECT") })
 
         // To be able to cancel requests using this tag
         //stringRequest.tag = TAG
 
-        queue?.add(stringRequest)
+        queue?.add(jsonRequest)
+    }
+
+    fun validateBySharedPreferences() {
 
     }
 
