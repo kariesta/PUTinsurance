@@ -9,7 +9,6 @@ import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
-import org.apache.commons.codec.binary.Hex
 import java.math.BigInteger
 import java.security.MessageDigest
 
