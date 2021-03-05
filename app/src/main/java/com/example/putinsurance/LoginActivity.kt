@@ -1,5 +1,6 @@
 package com.example.putinsurance
 
+import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -42,8 +43,9 @@ class LoginActivity : AppCompatActivity() {
 
         val stringRequest = StringRequest(Request.Method.POST, url,
             { response ->
-                // TODO: Send to next activity
+                // TODO: Add userid and passhash to sharedpreference
                 Log.d("logIn", "response ${response.toString()}")
+                startActivity(Intent(this, MainActivity::class.java))
             },
             { Log.d("logIn", "FAILED TO CONNECT") })
 
