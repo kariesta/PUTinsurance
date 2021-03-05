@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">PUTinsurance</string>
     <string name="e_mail">e-mail</string>
+    <string name="log_in">Log in</string>
+    <string name="password_hint">password</string>
+    <string name="log_in_button">Log in</string>
 </resources>
