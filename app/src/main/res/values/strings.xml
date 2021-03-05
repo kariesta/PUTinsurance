@@ -1,8 +1,9 @@
 <resources>
     <string name="app_name">PUTinsurance</string>
+    <string name="e_mail">e-mail</string>
+    <string name="log_in">Log in</string>
+    <string name="password_hint">password</string>
+    <string name="log_in_button">Log in</string>
     <string name="textView">textView</string>
-    <string name="claim_id">ID: %1$s</string>
-    <string name="claim_loc">ID: %1$s</string>
-    <string name="claim_des">ID: %1$s</string>
 
 </resources>
