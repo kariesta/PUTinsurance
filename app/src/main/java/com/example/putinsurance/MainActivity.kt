@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
 
         val viewManager = LinearLayoutManager(this)
         val viewAdapter: RecyclerView.Adapter<ClaimListAdapter.ViewHolder> = ClaimListAdapter(this, claimCards)
-        var recycView = findViewById<RecyclerView>(R.id.recyclerViewClaims).apply {
+        var recycleView = findViewById<RecyclerView>(R.id.recyclerViewClaims).apply {
             // use this setting to improve performance if you know that changes
             // in content do not change the layout size of the RecyclerView
             setHasFixedSize(true)
@@ -62,7 +62,7 @@ class MainActivity : AppCompatActivity() {
 
         // Create new views (invoked by the layout manager)
         override fun onCreateViewHolder(parent: ViewGroup,
-                                        viewType: Int): ClaimListAdapter.ViewHolder {
+                                        viewType: Int): ViewHolder {
             // create a new view
             val cardView = LayoutInflater.from(context)
                 .inflate(R.layout.claim_list_item, parent, false) as View
@@ -75,9 +75,9 @@ class MainActivity : AppCompatActivity() {
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             // - get element from your dataset at this position
             // - replace the contents of the view with that element
-            holder.cardView.claimIdField.text = "Id: ${myDataset[position].claimID} "
+            holder.cardView.claimIdField.text = "ID: ${myDataset[position].claimID} "
             holder.cardView.claimLocField.text = "Loc: ${myDataset[position].claimLocation}"
-            holder.cardView.claimDesField.text = "${myDataset[position].claimDes}"
+            holder.cardView.claimDesField.text = myDataset[position].claimDes
         }
 
         // Return the size of your dataset (invoked by the layout manager)
@@ -94,7 +94,7 @@ class MainActivity : AppCompatActivity() {
         editor.putStringSet("claimPhoto", mutableSetOf("photo0", "photo1"))
         editor.putStringSet("claimLocation", mutableSetOf("50-10", "50-15"))
         //editor.putStringSet("claimStatus", mutableSetOf("0", "1"))
-        editor.commit()
+        editor.apply()
 
     }
 
@@ -104,9 +104,9 @@ class MainActivity : AppCompatActivity() {
         val claimDeses = sharedPref.getStringSet("claimDes",setOf("0"))
         val claimPhotos = sharedPref.getStringSet("claimPhoto",setOf("0"))
         val claimLocations = sharedPref.getStringSet("claimLocation",setOf("0"))
-        Log.d("SHAREDPREF","this is now $numbOfClaims, ${claimIDs.first()}, ${claimDeses.first()}, ${claimPhotos.first()}, ${claimLocations.first()}")
+        Log.d("SHAREDPREF","this is now $numbOfClaims, ${claimIDs?.first()}, ${claimDeses?.first()}, ${claimPhotos?.first()}, ${claimLocations?.first()}")
 
-        var claims: MutableList<ClaimListItem> = mutableListOf()
+        val claims: MutableList<ClaimListItem> = mutableListOf()
         //lag "kort" for hver claim.
         for (i in 0 until numbOfClaims){
             claims.add(ClaimListItem(claimIDs.elementAt(i),claimDeses.elementAt(i),claimPhotos.elementAt(i),claimLocations.elementAt(i)))
