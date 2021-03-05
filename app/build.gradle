@@ -34,7 +34,4 @@ dependencies {
     // Volley library
     implementation 'com.android.volley:volley:1.1.1'
 
-    // Apache codec library: To be able to convert from byte array to hex string
-    implementation 'commons-codec:commons-codec:1.13'
-
 }
