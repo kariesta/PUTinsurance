@@ -1,5 +1,7 @@
 package com.example.putinsurance
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -7,9 +9,9 @@ import android.view.View
 import android.widget.EditText
 import com.android.volley.Request
 import com.android.volley.RequestQueue
+import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
-import org.apache.commons.codec.binary.Hex
 import java.math.BigInteger
 import java.security.MessageDigest
 
@@ -18,41 +20,24 @@ class LoginActivity : AppCompatActivity() {
     private val ip = "10.0.2.2"
     private val port = "8080"
 
+    // TODO: try to enable databinding and send these in from xml
     lateinit var email : EditText
     lateinit var password : EditText
 
     // private val TAG = "LOGIN"
     private var queue : RequestQueue? = null
 
+    // shared preferences
+    private lateinit var preferences : SharedPreferences
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
         email = findViewById(R.id.editTextTextEmailAddress)
         password = findViewById(R.id.editTextTextPassword)
-    }
 
-    // TODO: check if SINGLETON of
-    // TODO: How to get password hash?
-    // TODO: How to send parameters for post method
-    fun logIn(view: View) {
-        queue = Volley.newRequestQueue(this) // TODO: Check if we can only have one queue per activity
-
-        val parameters = "em=${email.text}&ph=${passwordToHashMD5(password.text.toString())}"
-        val url = "http://$ip:$port/methodPostRemoteLogin?${parameters}"
-        // val url = "http://$ip:$port/methodPostRemoteLogin?em=joe@gmail.com&ph=fa8e62d66b250b28819614c9c64f8f51"
-
-        val stringRequest = StringRequest(Request.Method.POST, url,
-            { response ->
-                // TODO: Send to next activity
-                Log.d("logIn", "response ${response.toString()}")
-            },
-            { Log.d("logIn", "FAILED TO CONNECT") })
-
-        // To be able to cancel requests using this tag
-        //stringRequest.tag = TAG
-
-        queue?.add(stringRequest)
-
+        preferences = this.getSharedPreferences("com.example.putinsurance", Context.MODE_PRIVATE)
     }
 
     override fun onStop() {
@@ -63,7 +48,106 @@ class LoginActivity : AppCompatActivity() {
         queue?.cancelAll(this)
     }
 
-    // Convert to hash somehow
+
+    // TODO: check if SINGLETON of shared preferences and queue is recommended
+    fun logIn(view: View) {
+        // Shared Preferences
+
+        val emailText =  email.text.toString()
+        val passwordHash = passwordToHashMD5(password.text.toString())
+
+
+        // If nullpointer exception is not thrown, then e-mail is saved in shared pref
+        try {
+            validateUserBySharedPreferences(emailText, passwordHash)
+        } catch (e : NullPointerException) {
+            validateUserByServer(emailText, passwordHash)
+        }
+
+    }
+
+    // TODO: delete the rest of the saved data. NB: Check first that all have been pushed to server!
+    fun logOut(view: View) {
+        deleteFromSharedPreferences()
+        Log.d("logIn", "LOGGING OUT")
+    }
+
+
+
+    // TODO: check if it is really necessary to validate by sharedpref as all user data is deleted when user logs out
+    private fun validateUserBySharedPreferences(email: String, passHash: String) {
+
+        val em = preferences.getString("email", null)
+        val ph = preferences.getString("passHash", null)
+
+        if (em!! == email && ph!! == passHash) {
+            // TODO: Send to next activity
+            Log.d("logIn", "SHARED PREFS: SUCCESS. SEND TO NEXT ACTIVITY")
+        } else {
+            // TODO: Show to user that password is incorrect
+            Log.d("logIn", "SHARED PREFS: FAIL. EMAIL/PASSWORD IS INCORRECT")
+        }
+    }
+
+    private fun validateUserByServer(email : String, passHash : String) {
+
+        // url
+        val parameters = "em=$email&ph=$passHash"
+        val url = "http://$ip:$port/methodPostRemoteLogin?$parameters"
+
+        sendPostRequest(url)
+
+    }
+
+    private fun sendPostRequest(url : String) {
+        // Request queue
+        // TODO: Check if we can only have one queue per activity
+        queue = Volley.newRequestQueue(this)
+
+        // jsonRequest
+        val jsonRequest = JsonObjectRequest(Request.Method.POST, url, null,
+            { response ->
+
+                // Parsing JSON object
+                val email = response.getString("email")
+                val passHash = response.getString("passHash")
+
+                // Updating shared preferences
+                insertIntoSharedPreferences(email, passHash)
+
+                // TODO: go to next activity
+                Log.d("logIn", "SERVER: SUCCESS. SEND TO NEXT ACTIVITY (email: $email and passHash: $passHash)")
+            },
+            {
+
+                // TODO: check if due to incorrect password or no contact with server (network/server down)
+                Log.d("logIn", "SERVER: FAILED TO CONNECT")
+            })
+
+
+        queue?.add(jsonRequest)
+
+    }
+
+    private fun insertIntoSharedPreferences(email : String, passHash: String) {
+        preferences.edit().apply {
+            putString("email", email)
+            putString("passHash", passHash)
+            // According to stack overflow, apply is faster than commit as it is asynchronous: https://stackoverflow.com/questions/5960678/whats-the-difference-between-commit-and-apply-in-sharedpreferences
+            apply()
+        }
+
+    }
+
+    private fun deleteFromSharedPreferences() {
+        preferences.edit().apply {
+            remove("email")
+            remove("passHash")
+            apply()
+        }
+    }
+
+    // Convert to hash using MD5
     // https://www.geeksforgeeks.org/md5-hash-in-java/ USE MD5
     private fun passwordToHashMD5(password : String) : String {
         val bytes = MessageDigest

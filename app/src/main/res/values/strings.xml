@@ -4,4 +4,5 @@
     <string name="log_in">Log in</string>
     <string name="password_hint">password</string>
     <string name="log_in_button">Log in</string>
+    <string name="log_out_button">Log out</string>
 </resources>
