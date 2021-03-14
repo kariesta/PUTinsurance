@@ -9,10 +9,17 @@ import android.util.Log
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
+import com.android.volley.Request
+import com.android.volley.RequestQueue
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
 
 class ClaimFormActivity : AppCompatActivity() {
 
+    private val ip = "10.0.2.2"
+    private val port = "8080"
     private lateinit var sharedPref: SharedPreferences
+    private lateinit var queue: RequestQueue
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,10 +44,9 @@ class ClaimFormActivity : AppCompatActivity() {
 
         //Legger inn nye verdier
         insertClaimIntoSharedPreferences(numbOfClaims,descString,longString,latString,photoName)
-        sendClaimToServer()
+        sendClaimToServer(numbOfClaims,descString,longString,latString,photoName)
         Toast.makeText(this,"New claim added",Toast.LENGTH_SHORT).show()
         Log.d("ADD_CLAIM","this will now be updated asynchronously with: ${sharedPref.getInt("numberOfClaims", 0)}, ${ sharedPref.getString("claimID$numbOfClaims","Null")}, ${ sharedPref.getString("claimDes$numbOfClaims","")}, ${ sharedPref.getString("claimPhoto$numbOfClaims","")}, ${ sharedPref.getString("claimLocation$numbOfClaims","")}")
-        sendClaimToServer()
         startActivity(Intent(this, MainActivity::class.java))
     }
 
@@ -55,8 +61,24 @@ class ClaimFormActivity : AppCompatActivity() {
         }
     }
 
-    private fun sendClaimToServer(){
-        //TODO: send new claim to server
+    private fun sendClaimToServer(claimID: Int, descString: String, longString: String, latString: String, photoName: String){
+        /*val userId = 0
+        val status = "na"
+        //public String postInsertNewClaim(@RequestParam String userId, @RequestParam String indexUpdateClaim, @RequestParam String newClaimDes, @RequestParam String newClaimPho, @RequestParam String newClaimLoc, @RequestParam String newClaimSta) {
+        queue = Volley.newRequestQueue(this)
+        val parameters = "userId=$userId&indexUpdateClaim=$claimID&newClaimDes=$descString&newClaimPho=$photoName&newClaimLoc=$longString-$latString&newClaimSta=$status"
+        val url = "http://$ip:$port/postInsertNewClaim?$parameters"
+        val jsonRequest = JsonObjectRequest(Request.Method.POST, url, null,
+            {
+                Log.d("ADD_CLAIM", "SERVER: SUCCESS.$it")
+            },
+            {
+                Log.d("ADD_CLAIM", "SERVER: FAILED TO CONNECT WITH $url")
+                //TODO: try again later
+            }
+        )
+        queue.add(jsonRequest)*/
+
     }
 
 }

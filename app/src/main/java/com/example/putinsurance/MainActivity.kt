@@ -104,7 +104,7 @@ class MainActivity : AppCompatActivity() {
 
     private  fun getClaimCards(sharedPref: SharedPreferences): MutableList<Claim>{
         val numbOfClaims = sharedPref.getInt("numberOfClaims",0)
-        Log.d("SHAREDPREF","this is now full of $numbOfClaims claims, time to do ${0 until numbOfClaims}")
+        //Log.d("SHAREDPREF","this is now full of $numbOfClaims claims")
 
         if (numbOfClaims == 0){
             return mutableListOf()
