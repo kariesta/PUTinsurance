@@ -1,6 +1,7 @@
 package com.example.putinsurance
 
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -10,7 +11,6 @@ import android.widget.EditText
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonObjectRequest
-import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import java.math.BigInteger
 import java.security.MessageDigest
@@ -29,7 +29,6 @@ class LoginActivity : AppCompatActivity() {
 
     // shared preferences
     private lateinit var preferences : SharedPreferences
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -84,6 +83,7 @@ class LoginActivity : AppCompatActivity() {
         if (em!! == email && ph!! == passHash) {
             // TODO: Send to next activity
             Log.d("logIn", "SHARED PREFS: SUCCESS. SEND TO NEXT ACTIVITY")
+            startActivity(Intent(this, MainActivity::class.java))
         } else {
             // TODO: Show to user that password is incorrect
             Log.d("logIn", "SHARED PREFS: FAIL. EMAIL/PASSWORD IS INCORRECT")
@@ -118,6 +118,7 @@ class LoginActivity : AppCompatActivity() {
 
                 // TODO: go to next activity
                 Log.d("logIn", "SERVER: SUCCESS. SEND TO NEXT ACTIVITY (email: $email and passHash: $passHash)")
+
             },
             {
 
