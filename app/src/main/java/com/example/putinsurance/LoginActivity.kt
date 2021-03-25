@@ -40,6 +40,7 @@ class LoginActivity : AppCompatActivity() {
         preferences = this.getSharedPreferences("com.example.putinsurance", Context.MODE_PRIVATE)
     }
 
+
     override fun onStop() {
         super.onStop()
         // Cancelling the requests

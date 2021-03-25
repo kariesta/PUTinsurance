@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".ClaimFormActivity">
+
+    <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginVertical="@android:dimen/app_icon_size">
+
+        <Button
+                android:text="@string/photoButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/addphotobutton"
+                android:layout_gravity="center"/>
+
+
+        <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/LatLay"
+                android:layout_gravity="center">
+
+            <TextView
+                    android:text="@string/LongitudeFieldLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/textView4" />
+
+            <EditText
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:inputType="textPersonName"
+                    android:text="@string/Latitude"
+                    android:ems="10"
+                    android:id="@+id/LatitudeField"
+                    android:importantForAutofill="no"
+                    android:labelFor="@id/LatitudeField"/>
+        </LinearLayout>
+
+        <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/LongLay"
+                android:layout_gravity="center">
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/textView3"
+                    android:text="@string/LatitudeFieldLabel" />
+
+            <EditText
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:inputType="textPersonName"
+                    android:text="@string/Longitude"
+                    android:ems="10"
+                    android:id="@+id/LongitudeField"
+                    android:importantForAutofill="no"
+                    android:labelFor="@id/LongitudeField"/>
+
+        </LinearLayout>
+
+        <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="textMultiLine"
+                android:gravity="start|top"
+                android:ems="10"
+                android:id="@+id/DescriptionField"
+                android:hint="@string/DescriptionHint"
+                android:text="@string/Description"
+                android:layout_gravity="center"
+                android:importantForAutofill="no"/>
+
+        <Button
+                android:text="@string/submitClaimButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/saveClaimButton"
+                android:layout_gravity="center"
+                android:onClick="submitClaim"
+                android:layout_marginVertical="@android:dimen/app_icon_size"/>
+
+
+    </LinearLayout>
+
+</android.support.constraint.ConstraintLayout>
