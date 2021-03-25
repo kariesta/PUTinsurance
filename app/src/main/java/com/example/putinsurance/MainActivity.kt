@@ -5,9 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
+import androidx.appcompat.app.AppCompatActivity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -36,9 +34,9 @@ class MainActivity : AppCompatActivity() {
         claimCards = getClaimCards(sharedPref)
 
 
-        val viewManager = LinearLayoutManager(this)
-        val viewAdapter: RecyclerView.Adapter<ClaimListAdapter.ViewHolder> = ClaimListAdapter(this, claimCards)
-        findViewById<RecyclerView>(R.id.recyclerViewClaims).apply {
+        val viewManager = androidx.recyclerview.widget.LinearLayoutManager(this)
+        val viewAdapter: androidx.recyclerview.widget.RecyclerView.Adapter<ClaimListAdapter.ViewHolder> = ClaimListAdapter(this, claimCards)
+        findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.recyclerViewClaims).apply {
             setHasFixedSize(true)
 
             // using a linear layout manager
@@ -50,13 +48,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private class ClaimListAdapter(private val context: Context, private val myDataset: MutableList<Claim>) :
-        RecyclerView.Adapter<ClaimListAdapter.ViewHolder>() {
+        androidx.recyclerview.widget.RecyclerView.Adapter<ClaimListAdapter.ViewHolder>() {
 
         // Provide a reference to the views for each data item
         // Complex data items may need more than one view per item, and
         // you provide access to all the views for a data item in a view holder.
         // Each data item is just a string in this case that is shown in a TextView.
-        class ViewHolder(val cardView: View) : RecyclerView.ViewHolder(cardView)
+        class ViewHolder(val cardView: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(cardView)
 
 
         // Create new views (invoked by the layout manager)

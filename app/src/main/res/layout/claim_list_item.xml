@@ -5,7 +5,7 @@
              android:layout_height="wrap_content"
              tools:context=".Claim">
 
-    <android.support.v7.widget.CardView
+    <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content" android:padding="2dp"
             app:cardBackgroundColor="#4500BCD4" app:contentPadding="2dp" app:cardCornerRadius="5dp">
@@ -38,5 +38,5 @@
                     android:layout_height="match_parent"
                     android:text=""/>
         </LinearLayout>
-    </android.support.v7.widget.CardView>
+    </androidx.cardview.widget.CardView>
 </FrameLayout>
