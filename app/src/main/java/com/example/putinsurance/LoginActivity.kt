@@ -57,7 +57,7 @@ class LoginActivity : AppCompatActivity() {
         val passwordHash = passwordToHashMD5(password.text.toString())
 
 
-        // If nullpointer exception is not thrown, then e-mail is saved in shared pref
+        // If email and password are in shared pref, nullpointerexception is not thrown
         try {
             validateUserBySharedPreferences(emailText, passwordHash)
         } catch (e : NullPointerException) {
