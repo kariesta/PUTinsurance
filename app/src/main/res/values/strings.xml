@@ -4,4 +4,15 @@
     <string name="log_in">Log in</string>
     <string name="password_hint">password</string>
     <string name="log_in_button">Log in</string>
+    <string name="textView">textView</string>
+    <string name="Description" />
+    <string name="Longitude" />
+    <string name="Latitude" />
+    <string name="photoButton">add photo</string>
+    <string name="LongitudeFieldLabel">"Lat:   "</string>
+    <string name="LatitudeFieldLabel">Long:</string>
+    <string name="DescriptionHint">write a description here</string>
+    <string name="submitClaimButton">save claim</string>
+    <string name="addingClaimButton">add claim</string>
+
 </resources>
