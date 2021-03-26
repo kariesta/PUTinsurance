@@ -92,6 +92,7 @@ class MainActivity : AppCompatActivity() {
             putString("claimDes0", "desc00")
             putString("claimDes1", "desc01")
             putString("claimPhoto0", "photo0.jpg")
+
             putString("claimPhoto1", "photo1.jpg")
             putString("claimLocation0", "50-10")
             putString("claimLocation1", "51-15")
@@ -121,4 +122,10 @@ class MainActivity : AppCompatActivity() {
         }
         startActivity(Intent(this, ClaimFormActivity::class.java))
     }
+
+    fun toMap(view: View) {
+        startActivity(Intent(this, MapsActivity::class.java))
+    }
+
+
 }
