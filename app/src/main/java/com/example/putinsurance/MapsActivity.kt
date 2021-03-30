@@ -1,5 +1,7 @@
 package com.example.putinsurance
 
+import android.content.Context
+import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 
@@ -13,6 +15,7 @@ import com.google.android.gms.maps.model.MarkerOptions
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
+    private lateinit var preferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,7 +24,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
+
+        preferences = getSharedPreferences("com.example.putinsurance", Context.MODE_PRIVATE)
     }
+
+
 
     /**
      * Manipulates the map once available.
@@ -35,8 +42,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
+        // Splitting a string with same form as coordinates in shared preferences
+        val coordinates = "59.91-10.75".split("-")
+        val lat = coordinates[0].toDouble()
+        val lng = coordinates[1].toDouble()
+
         // Add a marker in Oslo and move the camera
-        val oslo = LatLng(59.91, 10.75)
+        val oslo = LatLng(lat, lng)
         mMap.addMarker(MarkerOptions().position(oslo).title("Marker in Oslo"))
         // Zoom in at a specific level
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(oslo, 13F))
