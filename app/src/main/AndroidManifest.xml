@@ -37,10 +37,6 @@
                 android:label="@string/title_activity_main2"
                 android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
 
-        <activity
-                android:name=".MapsActivity"
-                android:label="@string/title_activity_maps" />
-
         <activity android:name=".ClaimFormActivity" />
 
         <activity android:name=".LoginActivity">

@@ -123,9 +123,5 @@ class MainActivity : AppCompatActivity() {
         startActivity(Intent(this, ClaimFormActivity::class.java))
     }
 
-    fun toTab(view: View) {
-        startActivity(Intent(this, TabActivity::class.java))
-    }
-
 
 }
