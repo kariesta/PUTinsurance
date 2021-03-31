@@ -123,10 +123,6 @@ class MainActivity : AppCompatActivity() {
         startActivity(Intent(this, ClaimFormActivity::class.java))
     }
 
-    fun toMap(view: View) {
-        startActivity(Intent(this, MapsActivity::class.java))
-    }
-
     fun toTab(view: View) {
         startActivity(Intent(this, TabActivity::class.java))
     }

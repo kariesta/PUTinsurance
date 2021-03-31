@@ -9,17 +9,24 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.putinsurance.R
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
+
 
 /**
  * A placeholder fragment containing a simple view.
  */
 class PlaceholderFragment : Fragment() {
 
-    private lateinit var pageViewModel: PageViewModel
+    private lateinit var stateViewModel: StateViewModel
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        pageViewModel = ViewModelProvider(this).get(PageViewModel::class.java).apply {
+        stateViewModel = ViewModelProvider(this).get(StateViewModel::class.java).apply {
             setIndex(arguments?.getInt(ARG_SECTION_NUMBER) ?: 1)
         }
     }
@@ -28,13 +35,37 @@ class PlaceholderFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val root = inflater.inflate(R.layout.fragment_main, container, false)
+        val root = inflater.inflate(R.layout.fragment_tab, container, false)
         val textView: TextView = root.findViewById(R.id.section_label)
-        pageViewModel.text.observe(this, Observer<String> {
+        stateViewModel.text.observe(this, Observer<String> {
             textView.text = it
         })
         return root
     }
+
+
+   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
+        mapFragment?.getMapAsync(callback)
+    }
+
+
+    private val callback = OnMapReadyCallback { googleMap ->
+
+
+        // Splitting a string with same form as coordinates in shared preferences
+        val coordinates = "59.91-10.75".split("-")
+        val lat = coordinates[0].toDouble()
+        val lng = coordinates[1].toDouble()
+
+        // Add a marker in Oslo and move the camera
+        val oslo = LatLng(lat, lng)
+        googleMap.addMarker(MarkerOptions().position(oslo).title("Marker in Oslo"))
+        // Zoom in at a specific level
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(oslo, 13F))
+    }
+
 
     companion object {
         /**
