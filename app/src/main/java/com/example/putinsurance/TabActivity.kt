@@ -8,7 +8,6 @@ import com.google.android.material.tabs.TabLayout
 import androidx.viewpager2.widget.ViewPager2
 import androidx.appcompat.app.AppCompatActivity
 import com.example.putinsurance.ui.main.SectionsStateAdapter
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.tabs.TabLayoutMediator
 
 class TabActivity : AppCompatActivity() {

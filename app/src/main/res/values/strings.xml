@@ -21,5 +21,6 @@
     <string name="tab_text_1">Tab 1</string>
     <string name="tab_text_2">Tab 2</string>
     <string name="tab_title">Claims</string>
+    <string name="new_claim">New claim</string>
 
 </resources>
