@@ -83,7 +83,7 @@ class LoginActivity : AppCompatActivity() {
         if (em!! == email && ph!! == passHash) {
             // TODO: Send to next activity
             Log.d("logIn", "SHARED PREFS: SUCCESS. SEND TO NEXT ACTIVITY")
-            startActivity(Intent(this, MainActivity::class.java))
+            startActivity(Intent(this, TabActivity::class.java))
         } else {
             // TODO: Show to user that password is incorrect
             Log.d("logIn", "SHARED PREFS: FAIL. EMAIL/PASSWORD IS INCORRECT")

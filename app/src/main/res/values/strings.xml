@@ -15,6 +15,13 @@
     <string name="DescriptionHint">write a description here</string>
     <string name="submitClaimButton">save claim</string>
     <string name="addingClaimButton">add claim</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="to_map">To map</string>
+    <string name="title_activity_main2">MainActivity2</string>
+    <string name="tab_text_1">Tab 1</string>
+    <string name="tab_text_2">Tab 2</string>
+    <string name="tab_title">Claims</string>
+    <string name="new_claim">New claim</string>
     <string name="claimFormImageDescription">Image for incident</string>
 
 </resources>

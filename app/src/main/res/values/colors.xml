@@ -1,6 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#008577</color>
-    <color name="colorPrimaryDark">#00574B</color>
-    <color name="colorAccent">#D81B60</color>
+
+    <!-- Source: https://material.io/blog/android-material-theme-color -->
+    <!-- Represents the color of the brand -->
+    <color name="colorPrimary">#FFFFFF</color> <!-- Color of buttons and such-->
+    <color name="colorSecondary">#304FFE</color> <!-- Color of extended FAB -->
+
+    <!-- Lighter or darker shades of the brand colors -->
+    <color name="colorPrimaryVariant">#A0D0F6</color>
+    <color name="colorSecondaryVariant">#6E100E</color>
+
+    <!-- Color on brand coloured surfaces -->
+    <color name="colorOnPrimary">#000000</color> <!-- Color of elements on buttons and such -->
+    <color name="colorOnSecondary">#FFFFFF</color> <!-- Color of elements on FAB -->
+
+    <!-- Used for sheets of material (like cards and bottom sheets)-->
+    <color name="colorSurface">#64B5F6</color> <!-- Color of tabs -->
+    <color name="colorOnSurface">#000000</color> <!-- Color of text on tab (that are not selected) -->
+
+    <!-- Backgrounds -->
+    <color name="colorBackground">#FFFFFF</color>
+    <color name="colorOnBackground">#000000</color>
+
+    <!-- Color for errors -->
+    <color name="colorError">#CF6679</color>
+    <color name="colorOnError">#000000</color>
+
+
 </resources>
