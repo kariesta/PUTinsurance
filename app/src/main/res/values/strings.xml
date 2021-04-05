@@ -15,5 +15,6 @@
     <string name="DescriptionHint">write a description here</string>
     <string name="submitClaimButton">save claim</string>
     <string name="addingClaimButton">add claim</string>
+    <string name="claimFormImageDescription">Image for incident</string>
 
 </resources>

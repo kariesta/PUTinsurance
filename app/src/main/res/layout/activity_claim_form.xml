@@ -13,15 +13,26 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginVertical="@android:dimen/app_icon_size">
+            app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="100dp"
+                tools:srcCompat="@tools:sample/backgrounds/scenic"
+                android:id="@+id/imageView"
+                android:minHeight="100dp"
+                android:contentDescription="@string/claimFormImageDescription"
+                android:maxHeight="170dp"
+                android:layout_margin="10dp"/>
 
         <Button
                 android:text="@string/photoButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/addphotobutton"
-                android:layout_gravity="center"/>
+                android:layout_gravity="center"
+                android:onClick="takePhoto"
+                android:layout_margin="10dp" />
 
 
         <LinearLayout
@@ -29,7 +40,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/LatLay"
-                android:layout_gravity="center">
+                android:layout_gravity="center"
+                android:layout_margin="10dp">
 
             <TextView
                     android:text="@string/LongitudeFieldLabel"
@@ -45,7 +57,7 @@
                     android:ems="10"
                     android:id="@+id/LatitudeField"
                     android:importantForAutofill="no"
-                    android:labelFor="@id/LatitudeField"/>
+                    android:labelFor="@id/LatitudeField" />
         </LinearLayout>
 
         <LinearLayout
@@ -53,7 +65,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/LongLay"
-                android:layout_gravity="center">
+                android:layout_gravity="center"
+                android:layout_margin="10dp">
 
             <TextView
                     android:layout_width="wrap_content"
@@ -69,7 +82,7 @@
                     android:ems="10"
                     android:id="@+id/LongitudeField"
                     android:importantForAutofill="no"
-                    android:labelFor="@id/LongitudeField"/>
+                    android:labelFor="@id/LongitudeField" />
 
         </LinearLayout>
 
@@ -83,7 +96,8 @@
                 android:hint="@string/DescriptionHint"
                 android:text="@string/Description"
                 android:layout_gravity="center"
-                android:importantForAutofill="no"/>
+                android:importantForAutofill="no"
+                android:layout_margin="10dp" />
 
         <Button
                 android:text="@string/submitClaimButton"
@@ -92,7 +106,8 @@
                 android:id="@+id/saveClaimButton"
                 android:layout_gravity="center"
                 android:onClick="submitClaim"
-                android:layout_marginVertical="@android:dimen/app_icon_size"/>
+                android:layout_marginVertical="@android:dimen/app_icon_size"
+                android:layout_margin="10dp" />
 
 
     </LinearLayout>
