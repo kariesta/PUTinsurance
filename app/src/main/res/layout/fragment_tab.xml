@@ -14,11 +14,27 @@
             android:layout_marginTop="@dimen/activity_vertical_margin"
             android:layout_marginBottom="@dimen/activity_vertical_margin" />
 
+    <ToggleButton
+            android:text="ToggleButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/toggleButton2"
+            android:textOff="Photo"
+            android:textOn="Map"
+            android:onClick="switchFragment"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_marginBottom="@dimen/activity_vertical_margin" />
+
+
+    <!-- https://stackoverflow.com/questions/9557833/replace-part-of-screen-content-by-using-fragments -->
     <fragment
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/map"
             android:layout_weight="3"
             android:name="com.google.android.gms.maps.SupportMapFragment" />
+
 
 </LinearLayout>

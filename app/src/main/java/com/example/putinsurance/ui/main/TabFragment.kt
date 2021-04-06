@@ -19,7 +19,7 @@ import com.google.android.gms.maps.model.MarkerOptions
 /**
  * A placeholder fragment containing a simple view.
  */
-class PlaceholderFragment : Fragment() {
+class TabFragment : Fragment() {
 
     private lateinit var stateViewModel: StateViewModel
 
@@ -46,6 +46,11 @@ class PlaceholderFragment : Fragment() {
 
    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        showMap()
+   }
+
+
+    fun showMap() {
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync(callback)
     }
@@ -79,8 +84,8 @@ class PlaceholderFragment : Fragment() {
          * number.
          */
         @JvmStatic
-        fun newInstance(sectionNumber: Int): PlaceholderFragment {
-            return PlaceholderFragment().apply {
+        fun newInstance(sectionNumber: Int): TabFragment {
+            return TabFragment().apply {
                 arguments = Bundle().apply {
                     putInt(ARG_SECTION_NUMBER, sectionNumber)
                 }

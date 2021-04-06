@@ -26,7 +26,8 @@
             android:inputType="textEmailAddress"
             android:ems="10"
             android:id="@+id/editTextTextEmailAddress"
-            android:hint="@string/e_mail"/>
+            android:hint="@string/e_mail"
+            android:text="joe@gmail.com"/> <!-- Remember to remove! -->
 
     <EditText
             android:layout_width="wrap_content"
@@ -34,7 +35,8 @@
             android:inputType="textPassword"
             android:ems="10"
             android:id="@+id/editTextTextPassword"
-            android:hint="@string/password_hint" />
+            android:hint="@string/password_hint"
+            android:text="xpta"/> <!-- Remember to remove! -->
 
     <Button
             android:text="@string/log_in_button"

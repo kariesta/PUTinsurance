@@ -2,6 +2,7 @@ package com.example.putinsurance
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
@@ -42,5 +43,15 @@ class TabActivity : AppCompatActivity() {
         //    .setAction("Action", null).show()
 
         startActivity(Intent(this, MainActivity::class.java))
+    }
+
+    // According to this answer, fragment switches should always be done through the activity in which they reside:
+    // https://stackoverflow.com/questions/58891060/android-switch-between-multiple-fragments-in-a-tab
+    // According to this blog post you should hide and show the fragments, especially since map fragment is expensive to set up
+    // https://medium.com/sweet-bytes/switching-between-fragments-without-the-mindless-killing-spree-9efee5f51924
+    fun switchFragment(v : View) {
+        Log.d("Tab", "Switching view")
+
+
     }
 }
