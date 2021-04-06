@@ -23,6 +23,7 @@ class TabActivity : AppCompatActivity() {
         viewPager2.adapter = sectionsStateAdapter
 
         // Finding tab layout
+        // Got a findViewById(R.id.tabs) must not be null. Is there a race condition somewhere??
         val tabs: TabLayout = findViewById(R.id.tabs)
 
         val tabTitles = listOf("4", "3", "2", "1", "0")
@@ -49,9 +50,13 @@ class TabActivity : AppCompatActivity() {
     // https://stackoverflow.com/questions/58891060/android-switch-between-multiple-fragments-in-a-tab
     // According to this blog post you should hide and show the fragments, especially since map fragment is expensive to set up
     // https://medium.com/sweet-bytes/switching-between-fragments-without-the-mindless-killing-spree-9efee5f51924
-    fun switchFragment(v : View) {
+    fun switchFragment(view: View) {
+
         Log.d("Tab", "Switching view")
 
-
     }
+
+    // OnCheckedChangeListener is recommended by stack overflow:
+    // https://stackoverflow.com/questions/11278507/android-widget-switch-on-off-event-listener
+
 }

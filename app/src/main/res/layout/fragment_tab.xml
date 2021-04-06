@@ -14,14 +14,13 @@
             android:layout_marginTop="@dimen/activity_vertical_margin"
             android:layout_marginBottom="@dimen/activity_vertical_margin" />
 
-    <ToggleButton
-            android:text="ToggleButton"
+    <androidx.appcompat.widget.SwitchCompat
+            android:text="Photo"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/toggleButton2"
-            android:textOff="Photo"
-            android:textOn="Map"
-            android:onClick="switchFragment"
+            android:layout_height="match_parent"
+            android:id="@+id/mySwitch"
+            android:layout_weight="6"
+            android:layoutDirection="rtl"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
             android:layout_marginTop="@dimen/activity_vertical_margin"
