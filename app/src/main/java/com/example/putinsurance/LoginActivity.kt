@@ -12,6 +12,7 @@ import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
+import com.example.putinsurance.data.DataRepository
 import java.math.BigInteger
 import java.security.MessageDigest
 
@@ -30,11 +31,14 @@ class LoginActivity : AppCompatActivity() {
     // shared preferences
     private lateinit var preferences : SharedPreferences
 
+    private lateinit var dataRepository: DataRepository
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
         email = findViewById(R.id.editTextTextEmailAddress)
         password = findViewById(R.id.editTextTextPassword)
+        dataRepository = DataRepository()
 
         preferences = this.getSharedPreferences("com.example.putinsurance", Context.MODE_PRIVATE)
     }
@@ -58,23 +62,27 @@ class LoginActivity : AppCompatActivity() {
 
 
         // If email and password are in shared pref, nullpointerexception is not thrown
-        try {
+        var foundUser = dataRepository.userValidation(emailText, passwordHash, preferences, this)
+        if (foundUser){
+            startActivity(Intent(this, TabActivity::class.java))
+        }
+        /*try {
             validateUserBySharedPreferences(emailText, passwordHash)
         } catch (e : NullPointerException) {
             validateUserByServer(emailText, passwordHash)
-        }
+        }*/
 
     }
 
     // TODO: delete the rest of the saved data. NB: Check first that all have been pushed to server!
     fun logOut(view: View) {
-        deleteFromSharedPreferences()
+        dataRepository.deleteFromSharedPreferences(preferences)
         Log.d("logIn", "LOGGING OUT")
     }
 
 
 
-    // TODO: check if it is really necessary to validate by sharedpref as all user data is deleted when user logs out
+    /*// TODO: check if it is really necessary to validate by sharedpref as all user data is deleted when user logs out
     private fun validateUserBySharedPreferences(email: String, passHash: String) {
 
         val em = preferences.getString("email", null)
@@ -140,6 +148,7 @@ class LoginActivity : AppCompatActivity() {
         }
 
     }
+    */
 
     private fun deleteFromSharedPreferences() {
         preferences.edit().apply {

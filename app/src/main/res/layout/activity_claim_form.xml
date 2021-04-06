@@ -89,7 +89,6 @@
         <EditText
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:inputType="textMultiLine"
                 android:gravity="start|top"
                 android:ems="10"
                 android:id="@+id/DescriptionField"
@@ -97,7 +96,8 @@
                 android:text="@string/Description"
                 android:layout_gravity="center"
                 android:importantForAutofill="no"
-                android:layout_margin="10dp" />
+                android:layout_margin="10dp"
+                android:inputType="text" />
 
         <Button
                 android:text="@string/submitClaimButton"
