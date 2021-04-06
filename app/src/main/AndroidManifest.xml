@@ -35,7 +35,13 @@
         <activity
                 android:name=".TabActivity"
                 android:label="@string/title_activity_main2"
-                android:theme="@style/AppThemeNoActionBar" />
+                android:theme="@style/AppThemeNoActionBar" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.HOME" />
+            </intent-filter>
+        </activity>
 
         <activity android:name=".ClaimFormActivity" />
 
@@ -47,13 +53,6 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.HOME" />
-            </intent-filter>
-        </activity>
         <provider
                 android:name="androidx.core.content.FileProvider"
                 android:authorities="com.example.android.fileprovider"

@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.putinsurance.R
+import com.example.putinsurance.data.DataRepository
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
@@ -40,6 +41,21 @@ class PlaceholderFragment : Fragment() {
         stateViewModel.text.observe(this, Observer<String> {
             textView.text = it
         })
+
+        val claimLocView: TextView = root.findViewById(R.id.claimLocField)
+        val claimDesView: TextView = root.findViewById(R.id.claimDesField)
+        val claimIDView: TextView = root.findViewById(R.id.claimIdField)
+        stateViewModel.locText.observe(this, Observer<String> {
+            claimLocView.text = it
+        })
+        stateViewModel.descText.observe(this, Observer<String> {
+            claimDesView.text = it
+        })
+        stateViewModel.idText.observe(this, Observer<String> {
+            claimIDView.text = it
+        })
+
+
         return root
     }
 

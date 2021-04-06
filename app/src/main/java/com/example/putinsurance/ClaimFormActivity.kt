@@ -16,6 +16,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import com.android.volley.RequestQueue
+import com.example.putinsurance.data.DataRepository
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -30,7 +31,8 @@ class ClaimFormActivity : AppCompatActivity() {
     private lateinit var imageView: ImageView
     private lateinit var imageBitmap: Bitmap
 
-    lateinit var currentPhotoPath: String
+    private var currentPhotoPath: String  = ""
+    private lateinit var dataRepository: DataRepository
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,6 +40,8 @@ class ClaimFormActivity : AppCompatActivity() {
         setContentView(R.layout.activity_claim_form)
         sharedPref = getSharedPreferences("com.example.putinsurance", Context.MODE_PRIVATE)
         imageView = findViewById<ImageView>(R.id.imageView)
+        dataRepository = DataRepository()
+
     }
 
 
@@ -53,8 +57,9 @@ class ClaimFormActivity : AppCompatActivity() {
 
 
         //Legger inn nye verdier
-        insertClaimIntoSharedPreferences(numbOfClaims, descString, longString, latString, photoName)
-        sendClaimToServer(numbOfClaims, descString, longString, latString, photoName)
+        dataRepository.addClaim(numbOfClaims, descString, longString, latString, photoName,sharedPref,this)
+        //dataRepository.insertClaimIntoSharedPreferences(numbOfClaims, descString, longString, latString, photoName,sharedPref)
+        //dataRepository.sendClaimToServer(numbOfClaims, descString, longString, latString, photoName)
         Toast.makeText(this, "New claim added", Toast.LENGTH_SHORT).show()
         Log.d(
             "ADD_CLAIM", "this will now be updated asynchronously with: ${
@@ -74,54 +79,15 @@ class ClaimFormActivity : AppCompatActivity() {
                 )
             }"
         )
-        startActivity(Intent(this, MainActivity::class.java))
+        startActivity(Intent(this, TabActivity::class.java))
     }
 
-    private fun insertClaimIntoSharedPreferences(
-        numbOfClaims: Int,
-        descString: String,
-        longString: String,
-        latString: String,
-        photoName: String
-    ){
-        sharedPref.edit().apply{
-            putInt("numberOfClaims", numbOfClaims + 1)
-            putString("claimID$numbOfClaims", numbOfClaims.toString())
-            putString("claimDes$numbOfClaims", descString)
-            putString("claimPhoto$numbOfClaims", "$photoName${numbOfClaims}.jpg")
-            putString("claimLocation$numbOfClaims", "$longString-$latString")
-            apply()
-        }
-    }
-
-    private fun sendClaimToServer(
-        claimID: Int,
-        descString: String,
-        longString: String,
-        latString: String,
-        photoName: String
-    ){
-        /*val userId = 0
-        val status = "na"
-        //public String postInsertNewClaim(@RequestParam String userId, @RequestParam String indexUpdateClaim, @RequestParam String newClaimDes, @RequestParam String newClaimPho, @RequestParam String newClaimLoc, @RequestParam String newClaimSta) {
-        queue = Volley.newRequestQueue(this)
-        val parameters = "userId=$userId&indexUpdateClaim=$claimID&newClaimDes=$descString&newClaimPho=$photoName&newClaimLoc=$longString-$latString&newClaimSta=$status"
-        val url = "http://$ip:$port/postInsertNewClaim?$parameters"
-        val jsonRequest = JsonObjectRequest(Request.Method.POST, url, null,
-            {
-                Log.d("ADD_CLAIM", "SERVER: SUCCESS.$it")
-            },
-            {
-                Log.d("ADD_CLAIM", "SERVER: FAILED TO CONNECT WITH $url")
-                //TODO: try again later
-            }
-        )
-        queue.add(jsonRequest)*/
-
-    }
 
 
     val REQUEST_IMAGE_CAPTURE = 1
+
+    // TODO (not baseline func) chose photo from gallery
+
 
     fun takePhoto(view: View) {
         dispatchTakePictureIntent()
@@ -174,6 +140,7 @@ class ClaimFormActivity : AppCompatActivity() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
         Log.d("ADD_PHOTO", "this will now Display image")
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             val f = File(currentPhotoPath)
