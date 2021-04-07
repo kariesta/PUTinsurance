@@ -41,6 +41,7 @@ class ClaimFormActivity : AppCompatActivity() {
         sharedPref = getSharedPreferences("com.example.putinsurance", Context.MODE_PRIVATE)
         imageView = findViewById<ImageView>(R.id.imageView)
         dataRepository = DataRepository()
+        dataRepository.getAllClaimsFromServer(sharedPref,this)
 
     }
 
