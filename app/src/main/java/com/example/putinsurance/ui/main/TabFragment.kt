@@ -5,10 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.appcompat.widget.SwitchCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.putinsurance.R
+import com.example.putinsurance.TabActivity
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
@@ -37,6 +39,15 @@ class TabFragment : Fragment() {
     ): View? {
         val root = inflater.inflate(R.layout.fragment_tab, container, false)
         val textView: TextView = root.findViewById(R.id.section_label)
+        val mySwitch : SwitchCompat = root.findViewById(R.id.mySwitch)
+
+        mySwitch.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked)
+                (activity as TabActivity).showPhoto(arguments?.getInt(ARG_SECTION_NUMBER))
+            else
+                (activity as TabActivity).showMap(arguments?.getInt(ARG_SECTION_NUMBER))
+        }
+
         stateViewModel.text.observe(this, Observer<String> {
             textView.text = it
         })
@@ -46,6 +57,7 @@ class TabFragment : Fragment() {
 
    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         showMap()
    }
 
