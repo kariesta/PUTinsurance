@@ -23,7 +23,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class ClaimFormActivity : AppCompatActivity() {
-
+    val MAX_CLAIMS = 5
     private val ip = "10.0.2.2"
     private val port = "8080"
     private lateinit var sharedPref: SharedPreferences
@@ -50,15 +50,17 @@ class ClaimFormActivity : AppCompatActivity() {
         Log.d("ADD_CLAIM", "this claim add has started")
 
         //collect all data from form
+        val numbOfClaims = sharedPref.getInt("numberOfClaims", 0)
+        if (numbOfClaims == MAX_CLAIMS){
+            Toast.makeText(this, "already reached claims limit", Toast.LENGTH_SHORT).show()
+        }
         val photoName = currentPhotoPath
         val longString = findViewById<TextView>(R.id.LongitudeField).text.toString()
         val latString = findViewById<TextView>(R.id.LatitudeField).text.toString()
         val descString = findViewById<TextView>(R.id.DescriptionField).text.toString()
-        val numbOfClaims = sharedPref.getInt("numberOfClaims", 0)
-
 
         //Legger inn nye verdier
-        dataRepository.addClaim(numbOfClaims, descString, longString, latString, photoName,sharedPref,this)
+        dataRepository.addClaim(numbOfClaims, Claim(numbOfClaims.toString(), descString, photoName, "$longString-$latString","0"),sharedPref,this)
         //dataRepository.insertClaimIntoSharedPreferences(numbOfClaims, descString, longString, latString, photoName,sharedPref)
         //dataRepository.sendClaimToServer(numbOfClaims, descString, longString, latString, photoName)
         Toast.makeText(this, "New claim added", Toast.LENGTH_SHORT).show()

@@ -131,7 +131,7 @@ class DataRepository {
     //get each claimField by id/get all claimfields for one id
     fun getClaimDataFromSharedPrefrences(id:Int, preferences: SharedPreferences): Claim{
         @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
-        return Claim(preferences.getString("claimID$id",""), preferences.getString("claimDes$id",""),preferences.getString("claimPhoto$id",""),preferences.getString("claimLocation$id",""))
+        return Claim(preferences.getString("claimID$id",""), preferences.getString("claimDes$id",""),preferences.getString("claimPhoto$id",""),preferences.getString("claimLocation$id",""),preferences.getString("claimStatus$id",""))
     }
 
     //get all claims
@@ -145,7 +145,7 @@ class DataRepository {
         //lag "kort" for hver claim.
         return (0 until numbOfClaims).map { i: Int ->
             @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
-            Claim(preferences.getString("claimID$i",""),preferences.getString("claimDes$i",""),preferences.getString("claimPhoto$i",""),preferences.getString("claimLocation$i",""))
+            Claim(preferences.getString("claimID$i","na"),preferences.getString("claimDes$i","na"),preferences.getString("claimPhoto$i","na"),preferences.getString("claimLocation$i","na"),preferences.getString("claimStatus$i","na"))
         }.toMutableList()
     }
 
@@ -166,7 +166,7 @@ class DataRepository {
             Request.Method.GET, url, null,
             { response ->
                 Log.d("GET_CLAIMS", "SERVER: SUCCESS. ServerClaims put in sharedpref")
-                insertServerClaimsIntoSharedPref(response)
+                insertServerClaimsIntoSharedPref(preferences, response)
             },
             {
                 // TODO: check if due to incorrect password or no contact with server (network/server down)
@@ -176,70 +176,47 @@ class DataRepository {
         queue?.add(jsonRequest)
     }
 
-    fun insertServerClaimsIntoSharedPref(serverClaimsResponse: JSONObject){
+    private fun insertServerClaimsIntoSharedPref(preferences: SharedPreferences, serverClaimsResponse: JSONObject){
         // serverResponse: D/GET_CLAIMS: {"id":"0","numberOfClaims":"2","claimId":["0","1","na","na","na"],"claimDes":["desc00","desc01","na","na","na"],"claimPhoto":["phot00","phot01","na","na","na"],"claimLocation":["50-10","50-15","na","na","na"],"claimStatus":["na","na","na","na","na"]}
-        val numOfClaims = serverClaimsResponse.getString("numberOfClaims")
-        for (0..numOfClaims):
-        /*preferences.edit().apply{
-            putInt("numberOfClaims", numbOfClaims + 1)
-            putString("claimID$numbOfClaims", numbOfClaims.toString())
-            putString("claimDes$numbOfClaims", descString)
-            putString("claimPhoto$numbOfClaims", "$photoName${numbOfClaims}.jpg")
-            putString("claimLocation$numbOfClaims", "$longString-$latString")
+        val numOfClaims: Int = serverClaimsResponse.getString("numberOfClaims").toInt()
+        preferences.edit().apply{
+            putInt("numberOfClaims", numOfClaims)
+            //read of claims and put into prefrences
+            for (i in 0 until numOfClaims) {
+                putString("claimID$i", i.toString())
+                putString("claimDes$i", serverClaimsResponse.getJSONArray("claimDes")[i].toString())
+                putString("claimPhoto$i", serverClaimsResponse.getJSONArray("claimPhoto")[i].toString())
+                putString("claimLocation$i", serverClaimsResponse.getJSONArray("claimLocation")[i].toString())
+            }
             apply()
-        }*/
-
-        // TODO WAS HERE; ADD TO SHAREDPREF
-
+        }
+        Log.d("GET_CLAIMS", "SERVER response put into shared preferences: ${serverClaimsResponse}")
     }
 
 
     //add new claim, sharedpref, and try to send to server
-    fun addClaim(numbOfClaims: Int,
-                 descString: String,
-                 longString: String,
-                 latString: String,
-                 photoName: String,
-                 preferences: SharedPreferences,
-                 context: Context
-    ){
-        insertClaimIntoSharedPreferences(numbOfClaims, descString, longString, latString, photoName,preferences)
-        val personID = preferences.getString("personID",null)
-        //TODO  let this run asyncroniously
-        sendClaimToServer(numbOfClaims, descString, longString, latString, photoName,personID,context)
+    fun addClaim(numbOfClaims: Int, claim: Claim, preferences: SharedPreferences, context: Context){
+        insertClaimIntoSharedPreferences(numbOfClaims, claim, preferences)
+        val personID = preferences.getString("personID","na")
+        addClaimToServer(claim,personID,context)
     }
 
-    private fun insertClaimIntoSharedPreferences(
-        numbOfClaims: Int,
-        descString: String,
-        longString: String,
-        latString: String,
-        photoName: String,
-        preferences: SharedPreferences
-    ){
+    private fun insertClaimIntoSharedPreferences(numbOfClaims: Int, claim:Claim, preferences: SharedPreferences){
         preferences.edit().apply{
             putInt("numberOfClaims", numbOfClaims + 1)
             putString("claimID$numbOfClaims", numbOfClaims.toString())
-            putString("claimDes$numbOfClaims", descString)
-            putString("claimPhoto$numbOfClaims", "$photoName${numbOfClaims}.jpg")
-            putString("claimLocation$numbOfClaims", "$longString-$latString")
+            putString("claimDes$numbOfClaims", claim.claimDes)
+            putString("claimPhoto$numbOfClaims", claim.claimPhoto)
+            putString("claimLocation$numbOfClaims", claim.claimLocation)
             apply()
         }
     }
 
-    private fun sendClaimToServer(
-        claimID: Int,
-        descString: String,
-        longString: String,
-        latString: String,
-        photoName: String,
-        personID: String,
-        context: Context
-    ){
-        val status = "na"
+    private fun addClaimToServer(claim: Claim, personID: String, context: Context){
+        val status = "0"
         //public String postInsertNewClaim(@RequestParam String userId, @RequestParam String indexUpdateClaim, @RequestParam String newClaimDes, @RequestParam String newClaimPho, @RequestParam String newClaimLoc, @RequestParam String newClaimSta) {
         queue = Volley.newRequestQueue(context)
-        val parameters = "userId=$personID&indexUpdateClaim=$claimID&newClaimDes=$descString&newClaimPho=$photoName&newClaimLoc=$longString-$latString&newClaimSta=$status"
+        val parameters = "userId=$personID&indexUpdateClaim=${claim.claimID}&newClaimDes=${claim.claimDes}&newClaimPho=${claim.claimPhoto}&newClaimLoc=${claim.claimPhoto}&newClaimSta=$status"
         val url = "http://$ip:$port/postInsertNewClaim?$parameters"
         val stringRequest = StringRequest(
             Request.Method.POST, url,
@@ -257,9 +234,44 @@ class DataRepository {
         queue?.add(stringRequest)
     }
 
+    fun updateClaim(claim: Claim, preferences: SharedPreferences, context: Context){
+        val status = updateClaimInSharedPreferences(claim, preferences)
+        val personID = preferences.getString("personID","na")
+        updateClaimInServer(claim, status, personID,context)
+    }
 
-    //DO to edited claims what is done for new claims.
+    private fun updateClaimInSharedPreferences(claim: Claim,preferences: SharedPreferences): Int{
+        val prevStatus = preferences.getString("claimStatus${claim.claimID}","0").toInt()
+        preferences.edit().apply{
+            putString("claimDes${claim.claimID}", claim.claimDes)
+            putString("claimPhoto${claim.claimID}", claim.claimPhoto)
+            putString("claimLocation${claim.claimID}", claim.claimLocation)
+            putString("claimStatus${claim.claimID}", (prevStatus+1).toString())
+            apply()
+        }
+        return prevStatus+1
+    }
 
+    private fun updateClaimInServer(claim: Claim, status: Int,  personID: String, context: Context){
+        //public String postInsertNewClaim(@RequestParam String userId, @RequestParam String indexUpdateClaim, @RequestParam String newClaimDes, @RequestParam String newClaimPho, @RequestParam String newClaimLoc, @RequestParam String newClaimSta) {
+        queue = Volley.newRequestQueue(context)
+        val parameters = "userId=$personID&indexUpdateClaim=${claim.claimID}&newClaimDes=${claim.claimDes}&newClaimPho=${claim.claimPhoto}&newClaimLoc=${claim.claimPhoto}&newClaimSta=${status}"
+        val url = "http://$ip:$port/postUpdateClaim?$parameters"
+        val stringRequest = StringRequest(
+            Request.Method.POST, url,
+            { _ ->
+                //response to successful request
+                Log.d("UPDATE_CLAIM", "SERVER: SUCCESS.")
+            },
+            //response to unsuccessful request
+            { error  -> Log.d("UPDATE_CLAIM", "SERVER: FAILED TO CONNECT WITH $url")
+                Log.d("UPDATE_CLAIM", "SERVER: FAILED DUE TO ${error.message}")
+                //handle error if server down, note that not connected and put in que again? maybe some resting time.
+                //handle error if network low.
+            }
+        )
+        queue?.add(stringRequest)
+    }
 
     //TODO get current location, useful for add claim
 
