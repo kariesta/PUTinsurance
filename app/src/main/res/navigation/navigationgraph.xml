@@ -11,12 +11,16 @@
             android:label="blank_fragment"
             tools:layout="@layout/blank_fragment" >
         <action
-                android:id="@+id/action_blankFragment_to_blankFragment2"
-                app:destination="@id/blankFragment2" />
+                android:id="@+id/action_blankFragment_to_claimFormFragment"
+                app:destination="@id/claimFormFragment" />
     </fragment>
     <fragment
-            android:id="@+id/blankFragment2"
-            android:name="com.example.putinsurance.BlankFragment2"
-            android:label="blank_fragment2"
-            tools:layout="@layout/blank_fragment2" />
+            android:id="@+id/claimFormFragment"
+            android:name="com.example.putinsurance.ClaimFormFragment"
+            android:label="claim_form_fragment"
+            tools:layout="@layout/claim_form_fragment" >
+        <action
+                android:id="@+id/action_claimFormFragment_to_blankFragment"
+                app:destination="@id/blankFragment" />
+    </fragment>
 </navigation>

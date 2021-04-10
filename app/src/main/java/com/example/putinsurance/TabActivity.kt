@@ -48,7 +48,7 @@ class TabActivity : AppCompatActivity() {
             Toast.makeText(this,"claim limit reached", Toast.LENGTH_SHORT).show()
             return
         }
-        startActivity(Intent(this, ClaimFormActivity::class.java))
+        //startActivity(Intent(this, ClaimFormActivity::class.java))
     }
 
     private fun fillTestingPref(sharedPref: SharedPreferences) {
@@ -68,8 +68,3 @@ class TabActivity : AppCompatActivity() {
         }
     }
 }
-
-
-
-
-

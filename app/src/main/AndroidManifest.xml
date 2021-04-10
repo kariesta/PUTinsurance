@@ -47,7 +47,6 @@
                 <category android:name="android.intent.category.HOME" />
             </intent-filter>
         </activity>
-        <activity android:name=".ClaimFormActivity" />
         <activity android:name=".LoginActivity">
         </activity>
 
