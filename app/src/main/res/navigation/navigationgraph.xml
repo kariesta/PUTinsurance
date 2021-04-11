@@ -3,7 +3,7 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/navigationgraph"
-        app:startDestination="@id/blankFragment">
+        app:startDestination="@id/loginFragment">
 
     <fragment
             android:id="@+id/blankFragment"
@@ -21,6 +21,14 @@
             tools:layout="@layout/claim_form_fragment" >
         <action
                 android:id="@+id/action_claimFormFragment_to_blankFragment"
+                app:destination="@id/blankFragment" />
+    </fragment>
+    <fragment
+            android:id="@+id/loginFragment"
+            android:name="com.example.putinsurance.LoginFragment"
+            android:label="LoginFragment" >
+        <action
+                android:id="@+id/action_loginFragment_to_blankFragment"
                 app:destination="@id/blankFragment" />
     </fragment>
 </navigation>

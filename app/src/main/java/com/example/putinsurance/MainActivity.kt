@@ -18,6 +18,8 @@ import androidx.navigation.Navigation
 import com.example.putinsurance.data.DataRepository
 import java.io.File
 import java.io.IOException
+import java.math.BigInteger
+import java.security.MessageDigest
 
 class MainActivity : AppCompatActivity() {
 
@@ -33,12 +35,61 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         sharedPref = getSharedPreferences("com.example.putinsurance", Context.MODE_PRIVATE)
-        dataRepository = DataRepository()
+        dataRepository = DataRepository(this,sharedPref)
     }
 
     fun next(view: View){
         Navigation.findNavController(view).navigate(R.id.action_blankFragment_to_claimFormFragment)
     }
+
+    /*override fun onStop() {
+        super.onStop()
+        // Cancelling the requests
+        //queue?.cancelAll(TAG)
+        // I think this is enough for one activity (no tags)
+        //can put queue in activity instead of datarepository?
+        queue?.cancelAll(this)
+    }*/
+
+    /**Login functions*/
+    // TODO: check if SINGLETON of shared preferences and queue is recommended
+    fun logIn(view: View) {
+        // Shared Preferences
+
+        val emailText =  findViewById<TextView>(R.id.editTextTextEmailAddress).text.toString()
+        val passwordHash = passwordToHashMD5(findViewById<TextView>(R.id.editTextTextPassword).text.toString())
+
+
+        // If email and password are in shared pref, nullpointerexception is not thrown
+        val foundUser = dataRepository.userValidation(emailText, passwordHash, view)
+        if (foundUser){
+            dataRepository.getAllClaims()
+            Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_blankFragment)
+        }
+        /*try {
+            validateUserBySharedPreferences(emailText, passwordHash)
+        } catch (e : NullPointerException) {
+            validateUserByServer(emailText, passwordHash)
+        }*/
+    }
+
+    // Convert to hash using MD5
+    // https://www.geeksforgeeks.org/md5-hash-in-java/ USE MD5
+    private fun passwordToHashMD5(password : String) : String {
+        val bytes = MessageDigest
+            .getInstance("MD5")
+            .digest(password.toByteArray())
+
+        return BigInteger(1, bytes).toString(16).padStart(32, '0')
+    }
+
+    // TODO: delete the rest of the saved data. NB: Check first that all have been pushed to server!
+    fun logOut(view: View) {
+        dataRepository.deleteFromSharedPreferences()
+        Log.d("logIn", "LOGGING OUT")
+    }
+    /**Login functions end*/
+
 
     /** Claim form functions*/
     // TODO (not baseline func) chose photo from gallery
@@ -113,7 +164,7 @@ class MainActivity : AppCompatActivity() {
 
 
         //Legger inn nye verdier
-        dataRepository.addClaim(numbOfClaims, descString, longString, latString, photoName,sharedPref,this)
+        dataRepository.addClaim(numbOfClaims, descString, longString, latString, photoName)
         //dataRepository.insertClaimIntoSharedPreferences(numbOfClaims, descString, longString, latString, photoName,sharedPref)
         //dataRepository.sendClaimToServer(numbOfClaims, descString, longString, latString, photoName)
         Toast.makeText(this, "New claim added", Toast.LENGTH_SHORT).show()

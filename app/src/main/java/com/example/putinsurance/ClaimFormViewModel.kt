@@ -6,7 +6,6 @@ import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 
 class ClaimFormViewModel : ViewModel() {
-    // TODO: Implement the ViewModel
 
     val lat = MutableLiveData<String>()
 

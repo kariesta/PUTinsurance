@@ -10,7 +10,6 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.lifecycle.Observer
-import com.example.putinsurance.ui.main.PlaceholderFragment
 import com.example.putinsurance.ui.main.StateViewModel
 
 class ClaimFormFragment : Fragment() {
@@ -20,10 +19,6 @@ class ClaimFormFragment : Fragment() {
     }
 
     private lateinit var viewModel: ClaimFormViewModel
-    private lateinit var claimFormViewModel: StateViewModel
-
-    private lateinit var sharedPref: SharedPreferences
-    private lateinit var imageView: ImageView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -38,22 +33,19 @@ class ClaimFormFragment : Fragment() {
         val claimLongView: TextView = root.findViewById(R.id.LongitudeField)
         val claimDescView: TextView = root.findViewById(R.id.DescriptionField)
 
-        viewModel.lat.observe(this, Observer<String> {
+        viewModel.lat.observe(this.viewLifecycleOwner , Observer<String> {
             claimLatView.text = it
         })
 
-        viewModel.long.observe(this, Observer<String> {
+        viewModel.long.observe(this.viewLifecycleOwner, Observer<String> {
             claimLongView.text = it
         })
 
-        viewModel.desc.observe(this, Observer<String> {
+        viewModel.desc.observe(this.viewLifecycleOwner, Observer<String> {
             claimDescView.text = it
         })
 
         return root
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-    }
 }

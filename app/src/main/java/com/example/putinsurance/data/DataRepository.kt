@@ -4,33 +4,36 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.util.Log
+import android.view.View
 import androidx.core.content.ContextCompat.startActivity
+import androidx.navigation.Navigation
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
-import com.example.putinsurance.Claim
+import com.example.putinsurance.R
 import com.example.putinsurance.TabActivity
 
-class DataRepository {
+class DataRepository constructor(val context: Context, val preferences: SharedPreferences) {
     private val ip = "10.0.2.2"
     private val port = "8080"
     private var queue : RequestQueue? = null
 
+    //todo value to store weither we are synced with server.
 
     //user id, stuff for login
-    fun userValidation(email: String, passHash: String, preferences: SharedPreferences, context: Context): Boolean{
-        var success = false
+    fun userValidation(email: String, passHash: String, view: View): Boolean{
+        var success: Boolean
         try {
-            success =  validateUserBySharedPreferences(email, passHash, preferences)
+            success =  validateUserBySharedPreferences(email, passHash)
         } catch (e : NullPointerException) {
-            success = validateUserByServer(email, passHash, preferences, context)
+            success = validateUserByServer(email, passHash,view)
         }
         return success
     }
 
     // TODO: check if it is really necessary to validate by sharedpref as all user data is deleted when user logs out
-    private fun validateUserBySharedPreferences(email: String, passHash: String, preferences: SharedPreferences): Boolean {
+    private fun validateUserBySharedPreferences(email: String, passHash: String): Boolean {
 
         val em = preferences.getString("email", null)
         val ph = preferences.getString("passHash", null)
@@ -45,21 +48,20 @@ class DataRepository {
         }
     }
 
-    private fun validateUserByServer(email : String, passHash : String, preferences: SharedPreferences, context: Context): Boolean {
+    private fun validateUserByServer(email : String, passHash : String, view: View): Boolean {
 
         // url
         val parameters = "em=$email&ph=$passHash"
         val url = "http://$ip:$port/methodPostRemoteLogin?$parameters"
 
-        return sendPostRequest(url, preferences, context)
+        return sendPostRequest(url, view)
 
     }
 
-    private fun sendPostRequest(url : String, preferences: SharedPreferences, context: Context ): Boolean {
+    private fun sendPostRequest(url : String, view: View): Boolean {
         // Request queue
         // TODO: Check if we can only have one queue per activity
         queue = Volley.newRequestQueue(context)
-
         // jsonRequest
         val jsonRequest = JsonObjectRequest(
             Request.Method.POST, url, null,
@@ -70,10 +72,11 @@ class DataRepository {
                 val personID = response.getString("id")
 
                 // Updating shared preferences
-                insertIntoSharedPreferences(email, passHash, personID, preferences)
+                insertIntoSharedPreferences(email, passHash, personID)
 
                 Log.d("logIn", "SERVER: SUCCESS. SEND TO NEXT ACTIVITY (email: $email and passHash: $passHash)")
-                startActivity(context,Intent(context, TabActivity::class.java), null)
+                Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_blankFragment)
+                //startActivity(context,Intent(context, TabActivity::class.java), null)
             },
             {
 
@@ -86,7 +89,7 @@ class DataRepository {
         return false //TODO more stable solution.
     }
 
-    private fun insertIntoSharedPreferences(email : String, passHash: String, personID: String, preferences: SharedPreferences) {
+    private fun insertIntoSharedPreferences(email : String, passHash: String, personID: String) {
         preferences.edit().apply {
             putString("email", email)
             putString("passHash", passHash)
@@ -98,7 +101,7 @@ class DataRepository {
     }
 
     //delete all data on logout
-    fun deleteFromSharedPreferences(preferences: SharedPreferences) {
+    fun deleteFromSharedPreferences() {
         preferences.edit().apply {
             remove("email")
             remove("passHash")
@@ -115,18 +118,18 @@ class DataRepository {
     //check for updates from server, use on login
 
     //get number of claims
-    fun getNumberOfClaims(preferences: SharedPreferences): Int{
+    fun getNumberOfClaims(): Int{
         return preferences.getInt("numberOfClaims",0)
     }
 
     //get each claimField by id/get all claimfields for one id
-    fun getClaimData(id:Int, preferences: SharedPreferences): Claim{
+    fun getClaimData(id:Int ): Claim {
         @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
         return Claim(preferences.getString("claimID$id",""), preferences.getString("claimDes$id",""),preferences.getString("claimPhoto$id",""),preferences.getString("claimLocation$id",""))
     }
 
     //get all claims
-    fun getAllClaims(preferences: SharedPreferences): MutableList<Claim>{
+    fun getAllClaims(): MutableList<Claim>{
         val numbOfClaims = preferences.getInt("numberOfClaims",0)
         //Log.d("SHAREDPREF","this is now full of $numbOfClaims claims")
 
@@ -136,7 +139,12 @@ class DataRepository {
         //lag "kort" for hver claim.
         return (0 until numbOfClaims).map { i: Int ->
             @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
-            Claim(preferences.getString("claimID$i",""),preferences.getString("claimDes$i",""),preferences.getString("claimPhoto$i",""),preferences.getString("claimLocation$i",""))
+            (Claim(
+        preferences.getString("claimID$i", ""),
+        preferences.getString("claimDes$i", ""),
+        preferences.getString("claimPhoto$i", ""),
+        preferences.getString("claimLocation$i", "")
+    ))
         }.toMutableList()
     }
 
@@ -147,14 +155,12 @@ class DataRepository {
                  descString: String,
                  longString: String,
                  latString: String,
-                 photoName: String,
-                 preferences: SharedPreferences,
-                 context: Context
+                 photoName: String
     ){
-        insertClaimIntoSharedPreferences(numbOfClaims, descString, longString, latString, photoName,preferences)
+        insertClaimIntoSharedPreferences(numbOfClaims, descString, longString, latString, photoName)
         val personID = preferences.getString("personID",null)
         //TODO  let this run asyncroniously
-        sendClaimToServer(numbOfClaims, descString, longString, latString, photoName,personID,context)
+        sendClaimToServer(numbOfClaims, descString, longString, latString, photoName,personID)
     }
 
     private fun insertClaimIntoSharedPreferences(
@@ -162,8 +168,7 @@ class DataRepository {
         descString: String,
         longString: String,
         latString: String,
-        photoName: String,
-        preferences: SharedPreferences
+        photoName: String
     ){
         preferences.edit().apply{
             putInt("numberOfClaims", numbOfClaims + 1)
@@ -181,8 +186,7 @@ class DataRepository {
         longString: String,
         latString: String,
         photoName: String,
-        personID: String,
-        context: Context
+        personID: String
     ){
         val status = "na"
         //public String postInsertNewClaim(@RequestParam String userId, @RequestParam String indexUpdateClaim, @RequestParam String newClaimDes, @RequestParam String newClaimPho, @RequestParam String newClaimLoc, @RequestParam String newClaimSta) {

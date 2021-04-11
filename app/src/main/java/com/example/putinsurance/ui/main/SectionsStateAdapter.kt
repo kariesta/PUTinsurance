@@ -17,7 +17,7 @@ class SectionsStateAdapter(activity: AppCompatActivity) :
     override fun createFragment(position: Int): Fragment {
         // getItem is called to instantiate the fragment for the given page.
         // Return a PlaceholderFragment (defined as a static inner class below).
-        return PlaceholderFragment.newInstance(position + 1)
+        return TabItemFragment.newInstance(position + 1)
     }
 
     override fun getItemCount(): Int {

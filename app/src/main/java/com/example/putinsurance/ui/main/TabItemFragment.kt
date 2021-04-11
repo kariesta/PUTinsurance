@@ -9,7 +9,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.putinsurance.R
-import com.example.putinsurance.data.DataRepository
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
@@ -20,7 +19,7 @@ import com.google.android.gms.maps.model.MarkerOptions
 /**
  * A placeholder fragment containing a simple view.
  */
-class PlaceholderFragment : Fragment() {
+class TabItemFragment : Fragment() {
 
     private lateinit var stateViewModel: StateViewModel
 
@@ -38,20 +37,20 @@ class PlaceholderFragment : Fragment() {
     ): View? {
         val root = inflater.inflate(R.layout.fragment_tab, container, false)
         val textView: TextView = root.findViewById(R.id.section_label)
-        stateViewModel.text.observe(this, Observer<String> {
+        stateViewModel.text.observe(this.viewLifecycleOwner, Observer<String> {
             textView.text = it
         })
 
         val claimLocView: TextView = root.findViewById(R.id.claimLocField)
         val claimDesView: TextView = root.findViewById(R.id.claimDesField)
         val claimIDView: TextView = root.findViewById(R.id.claimIdField)
-        stateViewModel.locText.observe(this, Observer<String> {
+        stateViewModel.locText.observe(this.viewLifecycleOwner, Observer<String> {
             claimLocView.text = it
         })
-        stateViewModel.descText.observe(this, Observer<String> {
+        stateViewModel.descText.observe(this.viewLifecycleOwner, Observer<String> {
             claimDesView.text = it
         })
-        stateViewModel.idText.observe(this, Observer<String> {
+        stateViewModel.idText.observe(this.viewLifecycleOwner, Observer<String> {
             claimIDView.text = it
         })
 
@@ -95,8 +94,8 @@ class PlaceholderFragment : Fragment() {
          * number.
          */
         @JvmStatic
-        fun newInstance(sectionNumber: Int): PlaceholderFragment {
-            return PlaceholderFragment().apply {
+        fun newInstance(sectionNumber: Int): TabItemFragment {
+            return TabItemFragment().apply {
                 arguments = Bundle().apply {
                     putInt(ARG_SECTION_NUMBER, sectionNumber)
                 }
