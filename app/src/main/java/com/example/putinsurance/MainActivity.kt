@@ -48,6 +48,10 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    fun next(view: View){
+        Navigation.findNavController(view).navigate(R.id.action_blankFragment_to_claimFormFragment)
+    }
+
     /*override fun onStop() {
         super.onStop()
         // Cancelling the requests

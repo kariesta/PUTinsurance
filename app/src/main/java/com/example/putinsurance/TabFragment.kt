@@ -33,9 +33,9 @@ class TabFragment : Fragment() {
         viewModel = ViewModelProvider(this).get(TabViewModel::class.java)
         val root = inflater.inflate(R.layout.tab_fragment, container, false)
         // Adapter
-        val sectionsStateAdapter = SectionsStateAdapter(parentFragmentManager, lifecycle)
+        //val sectionsStateAdapter = SectionsStateAdapter(this.requireActivity())
         Log.d("TABS","etter sectionStateAdapterkall lerlori")
-        val viewPager2: ViewPager2 = root.findViewById(R.id.view_pager)
+        /*val viewPager2: ViewPager2 = root.findViewById(R.id.view_pager)
         viewPager2.adapter = sectionsStateAdapter //Suspect this leaves a white page
 
         // Finding tab layout
@@ -49,7 +49,7 @@ class TabFragment : Fragment() {
         TabLayoutMediator(tabs, viewPager2) {
                 tab, position -> tab.text = tabTitles[position]
             viewPager2.setCurrentItem(tab.position, true)
-        }.attach()
+        }.attach()*/
         Log.d("TABS","tabFragment END lerlori$container   and $savedInstanceState")
         return super.onCreateView(inflater, container, savedInstanceState)
     }
