@@ -1,6 +1,5 @@
 package com.example.putinsurance
 
-import android.content.SharedPreferences
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -10,7 +9,6 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.lifecycle.Observer
-import com.example.putinsurance.ui.main.StateViewModel
 
 class ClaimFormFragment : Fragment() {
 

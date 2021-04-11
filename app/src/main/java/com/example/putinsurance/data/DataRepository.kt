@@ -1,18 +1,15 @@
 package com.example.putinsurance.data
 
 import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
 import android.util.Log
 import android.view.View
-import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.Navigation
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.putinsurance.R
-import com.example.putinsurance.TabActivity
 
 class DataRepository constructor(val context: Context, val preferences: SharedPreferences) {
     private val ip = "10.0.2.2"
@@ -75,7 +72,7 @@ class DataRepository constructor(val context: Context, val preferences: SharedPr
                 insertIntoSharedPreferences(email, passHash, personID)
 
                 Log.d("logIn", "SERVER: SUCCESS. SEND TO NEXT ACTIVITY (email: $email and passHash: $passHash)")
-                Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_blankFragment)
+                Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_tabFragment)
                 //startActivity(context,Intent(context, TabActivity::class.java), null)
             },
             {

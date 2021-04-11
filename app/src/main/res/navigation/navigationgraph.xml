@@ -6,29 +6,29 @@
         app:startDestination="@id/loginFragment">
 
     <fragment
-            android:id="@+id/blankFragment"
-            android:name="com.example.putinsurance.BlankFragment"
-            android:label="blank_fragment"
-            tools:layout="@layout/blank_fragment" >
-        <action
-                android:id="@+id/action_blankFragment_to_claimFormFragment"
-                app:destination="@id/claimFormFragment" />
-    </fragment>
-    <fragment
             android:id="@+id/claimFormFragment"
             android:name="com.example.putinsurance.ClaimFormFragment"
             android:label="claim_form_fragment"
             tools:layout="@layout/claim_form_fragment" >
         <action
-                android:id="@+id/action_claimFormFragment_to_blankFragment"
-                app:destination="@id/blankFragment" />
+                android:id="@+id/action_claimFormFragment_to_tabFragment"
+                app:destination="@id/tabFragment" />
     </fragment>
     <fragment
             android:id="@+id/loginFragment"
             android:name="com.example.putinsurance.LoginFragment"
             android:label="LoginFragment" >
         <action
-                android:id="@+id/action_loginFragment_to_blankFragment"
-                app:destination="@id/blankFragment" />
+                android:id="@+id/action_loginFragment_to_tabFragment"
+                app:destination="@id/tabFragment" />
+    </fragment>
+    <fragment
+            android:id="@+id/tabFragment"
+            android:name="com.example.putinsurance.TabFragment"
+            android:label="tab_fragment"
+            tools:layout="@layout/tab_fragment" >
+        <action
+                android:id="@+id/action_tabFragment_to_claimFormFragment"
+                app:destination="@id/claimFormFragment" />
     </fragment>
 </navigation>

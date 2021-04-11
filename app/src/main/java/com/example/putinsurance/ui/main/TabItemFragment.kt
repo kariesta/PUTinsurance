@@ -1,6 +1,7 @@
 package com.example.putinsurance.ui.main
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,36 +22,38 @@ import com.google.android.gms.maps.model.MarkerOptions
  */
 class TabItemFragment : Fragment() {
 
-    private lateinit var stateViewModel: StateViewModel
+    private lateinit var tabItemViewModel: TabItemViewModel
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Log.d("TABS","TabItemFragment lerlori")
         super.onCreate(savedInstanceState)
-        stateViewModel = ViewModelProvider(this).get(StateViewModel::class.java).apply {
+        tabItemViewModel = ViewModelProvider(this).get(TabItemViewModel::class.java).apply {
             setIndex(arguments?.getInt(ARG_SECTION_NUMBER) ?: 1)
         }
+        Log.d("TABS","TabItemFragment END lerlori")
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val root = inflater.inflate(R.layout.fragment_tab, container, false)
+        val root = inflater.inflate(R.layout.tab_item_fragment, container, false)
         val textView: TextView = root.findViewById(R.id.section_label)
-        stateViewModel.text.observe(this.viewLifecycleOwner, Observer<String> {
+        tabItemViewModel.text.observe(this.viewLifecycleOwner, Observer<String> {
             textView.text = it
         })
 
         val claimLocView: TextView = root.findViewById(R.id.claimLocField)
         val claimDesView: TextView = root.findViewById(R.id.claimDesField)
         val claimIDView: TextView = root.findViewById(R.id.claimIdField)
-        stateViewModel.locText.observe(this.viewLifecycleOwner, Observer<String> {
+        tabItemViewModel.locText.observe(this.viewLifecycleOwner, Observer<String> {
             claimLocView.text = it
         })
-        stateViewModel.descText.observe(this.viewLifecycleOwner, Observer<String> {
+        tabItemViewModel.descText.observe(this.viewLifecycleOwner, Observer<String> {
             claimDesView.text = it
         })
-        stateViewModel.idText.observe(this.viewLifecycleOwner, Observer<String> {
+        tabItemViewModel.idText.observe(this.viewLifecycleOwner, Observer<String> {
             claimIDView.text = it
         })
 

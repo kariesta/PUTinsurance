@@ -15,7 +15,11 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.FileProvider
 import androidx.navigation.Navigation
+import androidx.viewpager2.widget.ViewPager2
 import com.example.putinsurance.data.DataRepository
+import com.example.putinsurance.ui.main.SectionsStateAdapter
+import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayoutMediator
 import java.io.File
 import java.io.IOException
 import java.math.BigInteger
@@ -25,9 +29,10 @@ class MainActivity : AppCompatActivity() {
 
     private val ip = "10.0.2.2"
     private val port = "8080"
+    val MAX_CLAIMS = 5
     private lateinit var sharedPref: SharedPreferences
     private val REQUEST_IMAGE_CAPTURE = 1
-
+    private lateinit var sectionsStateAdapter: SectionsStateAdapter
     private var currentPhotoPath: String  = ""
     private lateinit var dataRepository: DataRepository
 
@@ -36,10 +41,11 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         sharedPref = getSharedPreferences("com.example.putinsurance", Context.MODE_PRIVATE)
         dataRepository = DataRepository(this,sharedPref)
-    }
 
-    fun next(view: View){
-        Navigation.findNavController(view).navigate(R.id.action_blankFragment_to_claimFormFragment)
+        /*// Adapter
+        sectionsStateAdapter = SectionsStateAdapter(this)
+        Log.d("TABS","etter sectionStateAdapterkall lerlori")*/
+
     }
 
     /*override fun onStop() {
@@ -64,7 +70,7 @@ class MainActivity : AppCompatActivity() {
         val foundUser = dataRepository.userValidation(emailText, passwordHash, view)
         if (foundUser){
             dataRepository.getAllClaims()
-            Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_blankFragment)
+            Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_tabFragment)
         }
         /*try {
             validateUserBySharedPreferences(emailText, passwordHash)
@@ -89,6 +95,19 @@ class MainActivity : AppCompatActivity() {
         Log.d("logIn", "LOGGING OUT")
     }
     /**Login functions end*/
+
+
+    /**Tab functions*/
+    fun newClaim(view: View) {
+        val numbOfClaims = sharedPref.getInt("numberOfClaims",0)
+        if (numbOfClaims >= MAX_CLAIMS) {
+            Toast.makeText(this,"claim limit reached", Toast.LENGTH_SHORT).show()
+            return
+        }
+        Navigation.findNavController(view).navigate(R.id.action_tabFragment_to_claimFormFragment)
+    }
+
+    /**Tab functions end*/
 
 
     /** Claim form functions*/
@@ -186,7 +205,7 @@ class MainActivity : AppCompatActivity() {
                 )
             }"
         )
-        Navigation.findNavController(view).navigate(R.id.action_claimFormFragment_to_blankFragment)
+        Navigation.findNavController(view).navigate(R.id.action_claimFormFragment_to_tabFragment)
     }
     /** Claim form functions end*/
 
