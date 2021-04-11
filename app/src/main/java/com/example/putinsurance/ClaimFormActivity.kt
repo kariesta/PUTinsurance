@@ -4,10 +4,12 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
+import android.util.Base64.encodeToString
 import android.util.Log
 import android.view.View
 import android.widget.ImageView
@@ -17,10 +19,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import com.android.volley.RequestQueue
 import com.example.putinsurance.data.DataRepository
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
+
 
 class ClaimFormActivity : AppCompatActivity() {
     val MAX_CLAIMS = 5
@@ -41,7 +45,7 @@ class ClaimFormActivity : AppCompatActivity() {
         sharedPref = getSharedPreferences("com.example.putinsurance", Context.MODE_PRIVATE)
         imageView = findViewById<ImageView>(R.id.imageView)
         dataRepository = DataRepository()
-        dataRepository.getAllClaimsFromServer(sharedPref,this)
+        dataRepository.getAllClaimsFromServer(sharedPref, this)
 
     }
 
@@ -58,9 +62,24 @@ class ClaimFormActivity : AppCompatActivity() {
         val longString = findViewById<TextView>(R.id.LongitudeField).text.toString()
         val latString = findViewById<TextView>(R.id.LatitudeField).text.toString()
         val descString = findViewById<TextView>(R.id.DescriptionField).text.toString()
-
+        var imageString: String? = null
+        if(currentPhotoPath != ""){
+            val bm = BitmapFactory.decodeFile(currentPhotoPath)
+            val baos = ByteArrayOutputStream()
+            bm.compress(Bitmap.CompressFormat.JPEG, 100, baos) // bm is the bitmap object
+            val b: ByteArray = baos.toByteArray()
+            imageString = encodeToString(b,0)
+        }
         //Legger inn nye verdier
-        dataRepository.addClaim(numbOfClaims, Claim(numbOfClaims.toString(), descString, photoName, "$longString-$latString","0"),sharedPref,this)
+        dataRepository.addClaim(
+            numbOfClaims, Claim(
+                numbOfClaims.toString(),
+                descString,
+                photoName,
+                "$longString-$latString",
+                "0"
+            ), imageString, sharedPref, this
+        )
         //dataRepository.insertClaimIntoSharedPreferences(numbOfClaims, descString, longString, latString, photoName,sharedPref)
         //dataRepository.sendClaimToServer(numbOfClaims, descString, longString, latString, photoName)
         Toast.makeText(this, "New claim added", Toast.LENGTH_SHORT).show()
