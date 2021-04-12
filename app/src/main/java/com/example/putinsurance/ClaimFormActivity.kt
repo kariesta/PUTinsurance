@@ -18,6 +18,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import com.android.volley.RequestQueue
+import com.example.putinsurance.data.Claim
 import com.example.putinsurance.data.DataRepository
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -44,8 +45,8 @@ class ClaimFormActivity : AppCompatActivity() {
         setContentView(R.layout.activity_claim_form)
         sharedPref = getSharedPreferences("com.example.putinsurance", Context.MODE_PRIVATE)
         imageView = findViewById<ImageView>(R.id.imageView)
-        dataRepository = DataRepository()
-        dataRepository.getAllClaimsFromServer(sharedPref, this)
+        dataRepository = DataRepository(this,sharedPref)
+        dataRepository.getAllClaimsFromServer()
 
     }
 
@@ -78,7 +79,7 @@ class ClaimFormActivity : AppCompatActivity() {
                 photoName,
                 "$longString-$latString",
                 "0"
-            ), imageString, sharedPref, this
+            ), imageString
         )
         //dataRepository.insertClaimIntoSharedPreferences(numbOfClaims, descString, longString, latString, photoName,sharedPref)
         //dataRepository.sendClaimToServer(numbOfClaims, descString, longString, latString, photoName)
