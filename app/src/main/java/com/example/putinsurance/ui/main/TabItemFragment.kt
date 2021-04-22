@@ -1,15 +1,18 @@
 package com.example.putinsurance.ui.main
 
+import android.app.TabActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.appcompat.widget.SwitchCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.putinsurance.R
+import com.example.putinsurance.TabFragment
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
@@ -22,48 +25,48 @@ import com.google.android.gms.maps.model.MarkerOptions
  */
 class TabItemFragment : Fragment() {
 
-    private lateinit var tabItemViewModel: TabItemViewModel
+    private lateinit var stateViewModel: StateViewModel
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        Log.d("TABS","TabItemFragment lerlori")
         super.onCreate(savedInstanceState)
-        tabItemViewModel = ViewModelProvider(this).get(TabItemViewModel::class.java).apply {
+        stateViewModel = ViewModelProvider(this).get(StateViewModel::class.java).apply {
             setIndex(arguments?.getInt(ARG_SECTION_NUMBER) ?: 1)
         }
-        Log.d("TABS","TabItemFragment END lerlori")
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val root = inflater.inflate(R.layout.tab_item_fragment, container, false)
+        val root = inflater.inflate(R.layout.fragment_tab_item, container, false)
         val textView: TextView = root.findViewById(R.id.section_label)
-        tabItemViewModel.text.observe(this.viewLifecycleOwner, Observer<String> {
+        val mySwitch : SwitchCompat = root.findViewById(R.id.mySwitch)
+
+        mySwitch.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked)
+                Log.d("TabItemFragment", "Showing photo")
+                //(activity as TabActivity).showPhoto(arguments?.getInt(ARG_SECTION_NUMBER))
+            else
+                Log.d("TabItemFragment", "Showing map")
+                //(activity as TabActivity).showMap(arguments?.getInt(ARG_SECTION_NUMBER))
+        }
+
+        stateViewModel.text.observe(viewLifecycleOwner, Observer<String> {
             textView.text = it
         })
-
-        val claimLocView: TextView = root.findViewById(R.id.claimLocField)
-        val claimDesView: TextView = root.findViewById(R.id.claimDesField)
-        val claimIDView: TextView = root.findViewById(R.id.claimIdField)
-        tabItemViewModel.locText.observe(this.viewLifecycleOwner, Observer<String> {
-            claimLocView.text = it
-        })
-        tabItemViewModel.descText.observe(this.viewLifecycleOwner, Observer<String> {
-            claimDesView.text = it
-        })
-        tabItemViewModel.idText.observe(this.viewLifecycleOwner, Observer<String> {
-            claimIDView.text = it
-        })
-
-
         return root
     }
 
 
-   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        showMap()
+    }
+
+
+    fun showMap() {
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync(callback)
     }
