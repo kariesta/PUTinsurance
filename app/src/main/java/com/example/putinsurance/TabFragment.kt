@@ -53,6 +53,10 @@ class TabFragment : Fragment() {
             viewPager2.setCurrentItem(tab.position, true)
         }.attach()
 
+        // does not work correctly inside here.
+        // Need to somehow get information of when it has been
+        // thought: should maybe just add all the markers at once?
+        // then just zoom in to correct one
         val mySwitch : SwitchCompat = view.findViewById(R.id.mySwitch)
 
         mySwitch.setOnCheckedChangeListener { _, isChecked ->
@@ -67,7 +71,7 @@ class TabFragment : Fragment() {
         showMap()
     }
 
-    fun showMap() {
+    private fun showMap() {
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync(callback)
     }
