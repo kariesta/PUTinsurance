@@ -42,7 +42,9 @@
             android:layout_height="wrap_content"
             android:id="@+id/button"
             android:layout_margin="20dp"
-            android:onClick="logIn"/>
+            android:onClick="logIn"
+
+            />
 
     <Button
             android:text="@string/log_out_button"

@@ -12,12 +12,21 @@ import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.example.putinsurance.R
-import com.example.putinsurance.TabActivity
+import kotlinx.coroutines.flow.callbackFlow
 import org.json.JSONObject
 import java.io.File
 
 
 class DataRepository  constructor(private val context: Context, private  val preferences: SharedPreferences) {
+
+    companion object {
+        @Volatile private var instance: DataRepository? = null
+
+        fun getInstance(context: Context, preferences: SharedPreferences) = instance ?: synchronized(this) {
+            instance?: DataRepository(context, preferences).also { instance = it}
+        }
+    }
+
     private val ip = "10.0.2.2"
     private val port = "8080"
     private val urlBase = "http://$ip:$port/"
@@ -29,13 +38,13 @@ class DataRepository  constructor(private val context: Context, private  val pre
     //user id, stuff for login
     fun userValidation(
         email: String,
-        passHash: String
+        passHash: String, callback: () -> Unit
     ): Boolean{
         var success = false
         try {
             success =  validateUserBySharedPreferences(email, passHash)
         } catch (e: NullPointerException) {
-            success = validateUserByServer(email, passHash )
+            success = validateUserByServer(email, passHash, callback)
         }
         return success
     }
@@ -65,18 +74,18 @@ class DataRepository  constructor(private val context: Context, private  val pre
 
     private fun validateUserByServer(
         email: String,
-        passHash: String
+        passHash: String, callback: () -> Unit
     ): Boolean {
 
         // url
         val parameters = "em=$email&ph=$passHash"
         val url = "${urlBase}methodPostRemoteLogin?$parameters"
 
-        return sendPostRequest(url)
+        return sendPostRequest(url, callback)
 
     }
 
-    private fun sendPostRequest(url: String): Boolean {
+    private fun sendPostRequest(url: String, callback: () -> Unit): Boolean {
         // Request queue
         // TODO: Check if we can only have one queue per activity
         //queue = Volley.newRequestQueue(context)
@@ -94,7 +103,7 @@ class DataRepository  constructor(private val context: Context, private  val pre
                 insertIntoSharedPreferences(email, passHash, personID)
 
                 Log.d("logIn", "SERVER: SUCCESS. SEND TO NEXT ACTIVITY (email: $email and passHash: $passHash)")
-                Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_tabFragment)
+                callback()
                 //startActivity(context,Intent(context, TabActivity::class.java), null)
             },
             {
@@ -157,10 +166,7 @@ class DataRepository  constructor(private val context: Context, private  val pre
             ),
             preferences.getString("claimPhoto$id", ""),
             preferences.getString("claimLocation$id", ""),
-            preferences.getString(
-                "claimStatus$id",
-                ""
-            )
+            preferences.getString("claimStatus$id", "")
         )
     }
 
@@ -175,12 +181,12 @@ class DataRepository  constructor(private val context: Context, private  val pre
         //lag "kort" for hver claim.
         return (0 until numbOfClaims).map { i: Int ->
             @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
-            (Claim(
+            Claim(
                 preferences.getString("claimID$i", "na"),
                 preferences.getString("claimDes$i", "na"),
                 preferences.getString("claimPhoto$i", "na"),
-                preferences.getString("claimLocation$i", "na")//,
-                //preferences.getString("claimStatus$i", "na")
+                preferences.getString("claimLocation$i", "na"),
+                preferences.getString("claimStatus$i", "na")
             )
         }.toMutableList()
     }
@@ -394,7 +400,5 @@ class DataRepository  constructor(private val context: Context, private  val pre
         )
         queue?.add(stringRequest)
     }
-
-    //TODO get current location, useful for add claim
 
 }
