@@ -30,14 +30,20 @@
         <action
                 android:id="@+id/action_tabFragment_to_claimFormFragment"
                 app:destination="@id/claimFormFragment" />
+        <action
+                android:id="@+id/action_tabFragment_to_settingsFragment"
+                app:destination="@id/settingsFragment" />
     </fragment>
     <fragment
-            android:id="@+id/blankFragment"
-            android:name="com.example.putinsurance.BlankFragment"
-            android:label="blank_fragment"
-            tools:layout="@layout/blank_fragment" >
+            android:id="@+id/settingsFragment"
+            android:name="com.example.putinsurance.SettingsFragment"
+            android:label="SettingsFragment"
+            tools:layout="@layout/settings_fragment">
         <action
-                android:id="@+id/action_blankFragment_to_claimFormFragment"
-                app:destination="@id/claimFormFragment" />
+                android:id="@+id/action_settingsFragment_to_tabFragment"
+                app:destination="@id/tabFragment" />
+        <action
+                android:id="@+id/action_settingsFragment_to_loginFragment"
+                app:destination="@id/loginFragment" />
     </fragment>
 </navigation>
