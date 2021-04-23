@@ -102,6 +102,7 @@ class DataRepository  constructor(private val context: Context, private  val pre
                 insertIntoSharedPreferences(email, passHash, personID)
 
                 Log.d("logIn", "SERVER: SUCCESS. SEND TO NEXT ACTIVITY (email: $email and passHash: $passHash)")
+                getAllClaimsFromServer()
                 callback(true)
                 //startActivity(context,Intent(context, TabActivity::class.java), null)
             },
@@ -344,7 +345,7 @@ class DataRepository  constructor(private val context: Context, private  val pre
             Request.Method.POST, url,
             { _ ->
                 //response to successful request
-                Log.d("ADD_CLAIM", "SERVER: SUCCESS.$,")
+                Log.d("ADD_CLAIM", "SERVER: SUCCESS, added ${claim.toString()}")
             },
             //response to unsuccessful request
             { error ->
@@ -367,7 +368,7 @@ class DataRepository  constructor(private val context: Context, private  val pre
             Request.Method.POST, url,
             { _ ->
                 //response to successful request
-                Log.d("ADD_CLAIM", "SERVER: SUCCESS.$,")
+                Log.d("ADD_CLAIM", "SERVER: SUCCESS.$imageString")
             },
             //response to unsuccessful request
             { error ->

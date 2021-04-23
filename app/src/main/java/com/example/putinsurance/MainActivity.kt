@@ -3,11 +3,14 @@ package com.example.putinsurance
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
+import android.util.Base64.DEFAULT
+import android.util.Base64.encodeToString
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
@@ -19,11 +22,14 @@ import androidx.navigation.Navigation
 import com.example.putinsurance.data.Claim
 import com.example.putinsurance.data.DataRepository
 import com.example.putinsurance.ui.main.SectionsStateAdapter
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
 import java.math.BigInteger
 import java.security.MessageDigest
 import java.security.Permission
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -34,6 +40,7 @@ class MainActivity : AppCompatActivity() {
     private val REQUEST_IMAGE_CAPTURE = 1
     private lateinit var sectionsStateAdapter: SectionsStateAdapter
     private var currentPhotoPath: String  = ""
+    private var currentPhotoFilename: String  = ""
     private lateinit var dataRepository: DataRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -122,15 +129,24 @@ class MainActivity : AppCompatActivity() {
     }
 
     @Throws(IOException::class)
-    private fun createImageFile(fileName: String): File {
+    private fun createImageFile(claimNumber: Int): File {
+        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
         val storageDir: File = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        currentPhotoFilename = "photo$claimNumber-$timeStamp"
+        Log.d("UPLOADIMAGE","image of number $claimNumber with $currentPhotoFilename")
         return File.createTempFile(
-            fileName, /* prefix */
+            currentPhotoFilename, /* prefix */
             ".jpg", /* suffix */
             storageDir /* directory */
         ).apply {
             // Save a file: path for use with ACTION_VIEW intents
+            Log.d("UPLOADIMAGE","image of actuall name $absolutePath")
+            Log.d("UPLOADIMAGE","image of cannon name $canonicalPath")
+            Log.d("UPLOADIMAGE","image of p name $path")
             currentPhotoPath = absolutePath
+            currentPhotoFilename = absolutePath.substringAfterLast("/").substringBeforeLast(".")
+            Log.d("UPLOADIMAGE","image of pcurrent name $currentPhotoFilename")
+
         }
     }
 
@@ -143,8 +159,7 @@ class MainActivity : AppCompatActivity() {
                 // Create the File where the photo should go
                 val photoFile: File? = try {
                     val nextClaimNumber = sharedPref.getInt("numberOfClaims",0)
-                    val filename = "photo${nextClaimNumber}"
-                    createImageFile(filename)
+                    createImageFile(nextClaimNumber)
                 } catch (ex: IOException) {
                     // Error occurred while creating the File
                     //...
@@ -180,15 +195,16 @@ class MainActivity : AppCompatActivity() {
         Log.d("ADD_CLAIM", "this claim add has started")
 
         //collect all data from form
-        val photoName = currentPhotoPath
+        val photoName = currentPhotoFilename
         val longString = findViewById<TextView>(R.id.LongitudeField).text.toString()
         val latString = findViewById<TextView>(R.id.LatitudeField).text.toString()
         val descString = findViewById<TextView>(R.id.DescriptionField).text.toString()
         val numbOfClaims = sharedPref.getInt("numberOfClaims", 0)
-
+        val imageBytes = File(currentPhotoPath).readBytes()
+        val imageString: String = android.util.Base64.encodeToString(imageBytes,android.util.Base64.DEFAULT)
 
         //Legger inn nye verdier
-        dataRepository.addClaim(numbOfClaims,Claim(numbOfClaims.toString(), descString, photoName,"$longString-$latString","0"),"")
+        dataRepository.addClaim(numbOfClaims,Claim(numbOfClaims.toString(), descString, photoName,"$longString-$latString","0"),imageString)
         //dataRepository.insertClaimIntoSharedPreferences(numbOfClaims, descString, longString, latString, photoName,sharedPref)
         //dataRepository.sendClaimToServer(numbOfClaims, descString, longString, latString, photoName)
         Toast.makeText(this, "New claim added", Toast.LENGTH_SHORT).show()
