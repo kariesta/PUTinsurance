@@ -23,5 +23,7 @@
     <string name="tab_title">Claims</string>
     <string name="new_claim">New claim</string>
     <string name="claimFormImageDescription">Image for incident</string>
+    <string name="passwordContent">xpta</string>
+    <string name="emailContent">joe@gmail.com</string>
 
 </resources>
