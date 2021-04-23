@@ -1,11 +1,14 @@
 package com.example.putinsurance.ui.main
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
+import com.example.putinsurance.data.Claim
+import com.example.putinsurance.data.DataRepository
 
-class StateViewModel : ViewModel() {
+class StateViewModel(private val dataRepository: DataRepository) : ViewModel() {
 
     private val _index = MutableLiveData<Int>()
     val text: LiveData<String> = Transformations.map(_index) {
@@ -29,11 +32,10 @@ class StateViewModel : ViewModel() {
 
     fun setIndex(index: Int) {
         _index.value = index
-        //TODO FETCH DATA FROM SHAREPREF
-
-
-        _loc.value = "${index*2}-${index}"
-        _desc.value = "${index*2} desky"
-        _id.value = "${index}"
+        val claim = dataRepository.getClaimDataFromSharedPrefrences(index-1)
+        Log.d("PICK_TAB","${claim.toString()}")
+        _loc.value = claim.claimLocation
+        _desc.value = claim.claimDes
+        _id.value = claim.claimID
     }
 }

@@ -1,15 +1,17 @@
 package com.example.putinsurance.ui.main
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.appcompat.widget.SwitchCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import com.example.putinsurance.InjectorUtils
 import com.example.putinsurance.R
-import com.example.putinsurance.data.DataRepository
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
@@ -20,14 +22,15 @@ import com.google.android.gms.maps.model.MarkerOptions
 /**
  * A placeholder fragment containing a simple view.
  */
-class PlaceholderFragment : Fragment() {
+class TabItemFragment : Fragment() {
 
     private lateinit var stateViewModel: StateViewModel
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        stateViewModel = ViewModelProvider(this).get(StateViewModel::class.java).apply {
+        val factory = InjectorUtils.provideTabItemViewModelFactory(this.requireContext())
+        stateViewModel = ViewModelProvider(this,factory).get(StateViewModel::class.java).apply {
             setIndex(arguments?.getInt(ARG_SECTION_NUMBER) ?: 1)
         }
     }
@@ -36,32 +39,48 @@ class PlaceholderFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val root = inflater.inflate(R.layout.fragment_tab, container, false)
+        val root = inflater.inflate(R.layout.fragment_tab_item, container, false)
         val textView: TextView = root.findViewById(R.id.section_label)
-        stateViewModel.text.observe(this, Observer<String> {
-            textView.text = it
-        })
+        val mySwitch : SwitchCompat = root.findViewById(R.id.mySwitch)
 
         val claimLocView: TextView = root.findViewById(R.id.claimLocField)
         val claimDesView: TextView = root.findViewById(R.id.claimDesField)
         val claimIDView: TextView = root.findViewById(R.id.claimIdField)
-        stateViewModel.locText.observe(this, Observer<String> {
+
+        mySwitch.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked)
+                Log.d("TabItemFragment", "Showing photo")
+                //(activity as TabActivity).showPhoto(arguments?.getInt(ARG_SECTION_NUMBER))
+            else
+                Log.d("TabItemFragment", "Showing map")
+                //(activity as TabActivity).showMap(arguments?.getInt(ARG_SECTION_NUMBER))
+        }
+
+        stateViewModel.text.observe(viewLifecycleOwner, Observer<String> {
+            textView.text = it
+        })
+
+        stateViewModel.locText.observe(this.viewLifecycleOwner, Observer<String> {
             claimLocView.text = it
         })
-        stateViewModel.descText.observe(this, Observer<String> {
+        stateViewModel.descText.observe(this.viewLifecycleOwner, Observer<String> {
             claimDesView.text = it
         })
-        stateViewModel.idText.observe(this, Observer<String> {
+        stateViewModel.idText.observe(this.viewLifecycleOwner, Observer<String> {
             claimIDView.text = it
         })
-
-
         return root
     }
 
 
-   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        showMap()
+    }
+
+
+    fun showMap() {
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync(callback)
     }
@@ -95,8 +114,8 @@ class PlaceholderFragment : Fragment() {
          * number.
          */
         @JvmStatic
-        fun newInstance(sectionNumber: Int): PlaceholderFragment {
-            return PlaceholderFragment().apply {
+        fun newInstance(sectionNumber: Int): TabItemFragment {
+            return TabItemFragment().apply {
                 arguments = Bundle().apply {
                     putInt(ARG_SECTION_NUMBER, sectionNumber)
                 }

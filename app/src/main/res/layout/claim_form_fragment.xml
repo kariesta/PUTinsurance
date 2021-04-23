@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+    <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="100dp"
+            android:id="@+id/photoPreviewView"
+            android:minHeight="100dp"
+            android:contentDescription="@string/claimFormImageDescription"
+            android:maxHeight="170dp"
+            android:layout_margin="10dp"
+            android:layout_gravity="center_horizontal" />
+
+
+    <Button
+            android:text="@string/photoButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/addphotobutton"
+            android:layout_gravity="center"
+            android:onClick="takePhoto"
+            android:layout_margin="10dp" />
+
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/LatLay"
+            android:layout_gravity="center"
+            android:layout_margin="10dp">
+
+        <TextView
+                android:text="@string/LongitudeFieldLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/textView4" />
+
+        <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="textPersonName"
+                android:text="@string/Latitude"
+                android:ems="10"
+                android:id="@+id/LatitudeField"
+                android:importantForAutofill="no"
+                android:labelFor="@id/LatitudeField" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/LongLay"
+            android:layout_gravity="center"
+            android:layout_margin="10dp">
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/textView3"
+                android:text="@string/LatitudeFieldLabel" />
+
+        <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="textPersonName"
+                android:text="@string/Longitude"
+                android:ems="10"
+                android:id="@+id/LongitudeField"
+                android:importantForAutofill="no"
+                android:labelFor="@id/LongitudeField" />
+
+    </LinearLayout>
+
+    <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="start|top"
+            android:ems="10"
+            android:id="@+id/DescriptionField"
+            android:hint="@string/DescriptionHint"
+            android:text="@string/Description"
+            android:layout_gravity="center"
+            android:importantForAutofill="no"
+            android:layout_margin="10dp"
+            android:inputType="text" />
+
+    <Button
+            android:text="@string/submitClaimButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/saveClaimButton"
+            android:layout_gravity="center"
+            android:onClick="submitClaim"
+            android:layout_marginVertical="@android:dimen/app_icon_size"
+            android:layout_margin="10dp" />
+</LinearLayout>

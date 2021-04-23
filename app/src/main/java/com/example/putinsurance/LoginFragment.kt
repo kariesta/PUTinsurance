@@ -3,11 +3,16 @@ package com.example.putinsurance
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.TextView
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonObjectRequest
@@ -16,69 +21,30 @@ import com.example.putinsurance.data.DataRepository
 import java.math.BigInteger
 import java.security.MessageDigest
 
-class LoginActivity : AppCompatActivity() {
+class LoginFragment : Fragment() {
 
-    private val ip = "10.0.2.2"
-    private val port = "8080"
-
-    // TODO: try to enable databinding and send these in from xml
-    lateinit var email : EditText
-    lateinit var password : EditText
-
-    // private val TAG = "LOGIN"
-    private var queue : RequestQueue? = null
-
-    // shared preferences
-    private lateinit var preferences : SharedPreferences
-
-    private lateinit var dataRepository: DataRepository
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login)
-        email = findViewById(R.id.editTextTextEmailAddress)
-        password = findViewById(R.id.editTextTextPassword)
-        dataRepository = DataRepository()
-
-        preferences = this.getSharedPreferences("com.example.putinsurance", Context.MODE_PRIVATE)
-    }
+    private lateinit var viewModel: LoginViewModel
 
 
-    override fun onStop() {
-        super.onStop()
-        // Cancelling the requests
-        //queue?.cancelAll(TAG)
-        // I think this is enough for one activity (no tags)
-        queue?.cancelAll(this)
-    }
-
-
-    // TODO: check if SINGLETON of shared preferences and queue is recommended
-    fun logIn(view: View) {
-        // Shared Preferences
-
-        val emailText =  email.text.toString()
-        val passwordHash = passwordToHashMD5(password.text.toString())
-
-
-        // If email and password are in shared pref, nullpointerexception is not thrown
-        var foundUser = dataRepository.userValidation(emailText, passwordHash, preferences, this)
-        if (foundUser){
-            startActivity(Intent(this, TabActivity::class.java))
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        viewModel = ViewModelProvider(this).get(LoginViewModel::class.java).apply {
+            //set up any value here, like setLocation()
         }
-        /*try {
-            validateUserBySharedPreferences(emailText, passwordHash)
-        } catch (e : NullPointerException) {
-            validateUserByServer(emailText, passwordHash)
-        }*/
-
+        val root = inflater.inflate(R.layout.login_fragment, container, false)
+        val emailField: TextView = root.findViewById(R.id.editTextTextEmailAddress)
+        val passwordField: TextView = root.findViewById(R.id.editTextTextPassword)
+        viewModel.email.observe(this.viewLifecycleOwner, Observer<String> {
+            emailField.text = it
+        })
+        viewModel.password.observe(this.viewLifecycleOwner, Observer<String> {
+            passwordField.text = it
+        })
+        return root
     }
 
-    // TODO: delete the rest of the saved data. NB: Check first that all have been pushed to server!
-    fun logOut(view: View) {
-        dataRepository.deleteFromSharedPreferences(preferences)
-        Log.d("logIn", "LOGGING OUT")
-    }
 
 
 
@@ -150,21 +116,5 @@ class LoginActivity : AppCompatActivity() {
     }
     */
 
-    private fun deleteFromSharedPreferences() {
-        preferences.edit().apply {
-            remove("email")
-            remove("passHash")
-            apply()
-        }
-    }
 
-    // Convert to hash using MD5
-    // https://www.geeksforgeeks.org/md5-hash-in-java/ USE MD5
-    private fun passwordToHashMD5(password : String) : String {
-        val bytes = MessageDigest
-            .getInstance("MD5")
-            .digest(password.toByteArray())
-
-        return BigInteger(1, bytes).toString(16).padStart(32, '0')
-    }
 }
