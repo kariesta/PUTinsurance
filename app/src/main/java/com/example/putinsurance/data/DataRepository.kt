@@ -11,13 +11,11 @@ import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
-import com.example.putinsurance.R
-import kotlinx.coroutines.flow.callbackFlow
 import org.json.JSONObject
 import java.io.File
 
 
-class DataRepository  constructor(private val context: Context, private  val preferences: SharedPreferences) {
+class DataRepository private constructor(private val context: Context, private  val preferences: SharedPreferences) {
 
     companion object {
         @Volatile private var instance: DataRepository? = null

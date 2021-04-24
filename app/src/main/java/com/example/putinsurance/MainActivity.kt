@@ -9,7 +9,6 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
-import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -18,12 +17,10 @@ import androidx.core.content.FileProvider
 import androidx.navigation.Navigation
 import com.example.putinsurance.data.Claim
 import com.example.putinsurance.data.DataRepository
-import com.example.putinsurance.ui.main.SectionsStateAdapter
 import java.io.File
 import java.io.IOException
 import java.math.BigInteger
 import java.security.MessageDigest
-import java.security.Permission
 
 class MainActivity : AppCompatActivity() {
 
@@ -32,7 +29,6 @@ class MainActivity : AppCompatActivity() {
     val MAX_CLAIMS = 5
     private lateinit var sharedPref: SharedPreferences
     private val REQUEST_IMAGE_CAPTURE = 1
-    private lateinit var sectionsStateAdapter: SectionsStateAdapter
     private var currentPhotoPath: String  = ""
     private lateinit var dataRepository: DataRepository
 
@@ -40,7 +36,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         sharedPref = getSharedPreferences("com.example.putinsurance", Context.MODE_PRIVATE)
-        dataRepository = DataRepository(this,sharedPref)
+        dataRepository = InjectorUtils.getDataRepository(this)
 
         /*// Adapter
         sectionsStateAdapter = SectionsStateAdapter(this)
@@ -66,7 +62,7 @@ class MainActivity : AppCompatActivity() {
         val passwordHash = passwordToHashMD5(findViewById<TextView>(R.id.editTextTextPassword).text.toString())
         val loginCallBack =  { valid:Boolean ->
             if(valid){
-                dataRepository.getAllClaims()
+                dataRepository.getAllClaimsFromServer()
                 Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_tabFragment)
             } else {
                 Toast.makeText(this,"login failed", Toast.LENGTH_SHORT).show()
