@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
+import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -22,6 +23,7 @@ import java.io.File
 import java.io.IOException
 import java.math.BigInteger
 import java.security.MessageDigest
+import java.security.Permission
 
 class MainActivity : AppCompatActivity() {
 
@@ -46,10 +48,6 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    fun next(view: View){
-        Navigation.findNavController(view).navigate(R.id.action_blankFragment_to_claimFormFragment)
-    }
-
     /*override fun onStop() {
         super.onStop()
         // Cancelling the requests
@@ -66,22 +64,18 @@ class MainActivity : AppCompatActivity() {
 
         val emailText =  findViewById<TextView>(R.id.editTextTextEmailAddress).text.toString()
         val passwordHash = passwordToHashMD5(findViewById<TextView>(R.id.editTextTextPassword).text.toString())
-        val loginCallBack = {
-            dataRepository.getAllClaims()
-            Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_tabFragment)
+        val loginCallBack =  { valid:Boolean ->
+            if(valid){
+                dataRepository.getAllClaims()
+                Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_tabFragment)
+            } else {
+                Toast.makeText(this,"login failed", Toast.LENGTH_SHORT).show()
+            }
         }
 
         // If email and password are in shared pref, nullpointerexception is not thrown
-        val foundUser = dataRepository.userValidation(emailText, passwordHash, loginCallBack)
-        if (foundUser){
-            dataRepository.getAllClaims()
-            Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_tabFragment)
-        }
-        /*try {
-            validateUserBySharedPreferences(emailText, passwordHash)
-        } catch (e : NullPointerException) {
-            validateUserByServer(emailText, passwordHash)
-        }*/
+        dataRepository.userValidation(emailText, passwordHash, loginCallBack)
+
     }
 
 
@@ -100,6 +94,7 @@ class MainActivity : AppCompatActivity() {
     fun logOut(view: View) {
         dataRepository.deleteFromSharedPreferences()
         Log.d("logIn", "LOGGING OUT")
+        Navigation.findNavController(view).navigate(R.id.action_settingsFragment_to_loginFragment)
     }
     /**Login functions end*/
 
@@ -114,6 +109,9 @@ class MainActivity : AppCompatActivity() {
         Navigation.findNavController(view).navigate(R.id.action_tabFragment_to_claimFormFragment)
     }
 
+    fun goToSettings(view: View){
+        Navigation.findNavController(view).navigate(R.id.action_tabFragment_to_settingsFragment)
+    }
     /**Tab functions end*/
 
 
@@ -215,5 +213,18 @@ class MainActivity : AppCompatActivity() {
         Navigation.findNavController(view).navigate(R.id.action_claimFormFragment_to_tabFragment)
     }
     /** Claim form functions end*/
+
+    /** settings functions*/
+    fun changePassword(view: View){
+        Log.d("ADD_CLAIM", "this claim add has started")
+        val password: String = findViewById<TextView>(R.id.editTextTextPassword).text.toString()
+        val passHash = passwordToHashMD5(password)
+        val changePasswordCallBack = {
+            Toast.makeText(this,"password is updated", Toast.LENGTH_SHORT).show()
+        }
+
+        dataRepository.changePassword(password,passHash,changePasswordCallBack)
+    }
+    /** settings functions end*/
 
 }

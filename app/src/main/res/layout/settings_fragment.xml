@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".SettingsFragment">
+
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+            <TextView
+                    android:text="@string/changepassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/textView"
+                    android:textAlignment="textStart"
+                    android:textSize="14sp"
+                    android:textColor="@color/colorSecondary"
+                    android:textColorLink="#FFFFFF"
+                    android:textStyle="bold"
+                    android:textColorHighlight="#FFFFFF"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="32dp" />
+
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:id="@+id/linearLayout">
+
+                <EditText
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPassword"
+                        android:ems="8"
+                        android:id="@+id/editNewPassword"
+                        android:text="@string/newPasswordContent"
+                        android:hint="@string/new_password_hint"
+                        android:textSize="12sp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_marginStart="16dp"
+                        android:autofillHints="@string/new_password_hint"/>
+
+                <Button
+                        android:text="@string/changepasswordButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/changePasswordButton"
+                        android:onClick="changePassword"
+                        android:textSize="12sp" />
+            </LinearLayout>
+
+            <androidx.fragment.app.FragmentContainerView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:name="com.example.putinsurance.preferencesFragment"
+                    android:id="@+id/fragment" />
+
+            <!--button-icon from https://fonts.google.com/icons-->
+            <Button
+                    android:text="@string/log_out_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/button_log_out"
+                    android:onClick="logOut"
+                    android:gravity="center"
+                    android:textSize="12sp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginVertical="32dp"
+                    app:icon="@drawable/outline_logout_20"
+                    app:iconGravity="textEnd" />
+        </LinearLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

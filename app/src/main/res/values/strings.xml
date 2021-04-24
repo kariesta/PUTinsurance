@@ -25,5 +25,23 @@
     <string name="claimFormImageDescription">Image for incident</string>
     <string name="passwordContent">xpta</string>
     <string name="emailContent">joe@gmail.com</string>
+    <string name="settings">Settings</string>
+    <!-- Preference Titles -->
+    <string name="accesss_header">access</string>
+    <string name="sync_header">Sync</string>
 
+    <!-- Preferences -->
+    <string name="gpsAllowance">gps</string>
+    <string name="cameraAllowance">cameraroll</string>
+    <string name="sync_title">PLACEHOLDER</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails
+    </string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+
+    <string name="changepassword">password</string>
+    <string name="new_password_hint">new password</string>
+    <string name="newPasswordContent" />
+    <string name="changepasswordButton">change</string>
+    <string name="settingsIconDescription">settings-button with gear symbol</string>
 </resources>

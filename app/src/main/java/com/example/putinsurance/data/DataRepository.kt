@@ -38,15 +38,14 @@ class DataRepository  constructor(private val context: Context, private  val pre
     //user id, stuff for login
     fun userValidation(
         email: String,
-        passHash: String, callback: () -> Unit
-    ): Boolean{
-        var success = false
+        passHash: String,
+        callback: (Boolean) -> Unit
+    ) {
         try {
-            success =  validateUserBySharedPreferences(email, passHash)
+            validateUserBySharedPreferences(email, passHash,callback)
         } catch (e: NullPointerException) {
-            success = validateUserByServer(email, passHash, callback)
+            validateUserByServer(email, passHash, callback)
         }
-        return success
     }
 
     fun getUserId(): String?{
@@ -56,36 +55,36 @@ class DataRepository  constructor(private val context: Context, private  val pre
     // TODO: check if it is really necessary to validate by sharedpref as all user data is deleted when user logs out
     private fun validateUserBySharedPreferences(
         email: String,
-        passHash: String
-    ): Boolean {
+        passHash: String,
+        callback: (Boolean) -> Unit
+    ) {
 
         val em = preferences.getString("email", null)
         val ph = preferences.getString("passHash", null)
 
         if (em!! == email && ph!! == passHash) {
             Log.d("logIn", "SHARED PREFS: SUCCESS. SEND TO NEXT ACTIVITY")
-            return true
+            callback(true)
         } else {
-            // TODO: Show to user that password is incorrect
             Log.d("logIn", "SHARED PREFS: FAIL. EMAIL/PASSWORD IS INCORRECT")
-            return false
+            callback(false)
         }
     }
 
     private fun validateUserByServer(
         email: String,
-        passHash: String, callback: () -> Unit
+        passHash: String, callback: (Boolean) -> Unit
     ): Boolean {
 
         // url
         val parameters = "em=$email&ph=$passHash"
         val url = "${urlBase}methodPostRemoteLogin?$parameters"
 
-        return sendPostRequest(url, callback)
+        return sendLoginRequest(url, callback)
 
     }
 
-    private fun sendPostRequest(url: String, callback: () -> Unit): Boolean {
+    private fun sendLoginRequest(url: String, callback: (Boolean) -> Unit): Boolean {
         // Request queue
         // TODO: Check if we can only have one queue per activity
         //queue = Volley.newRequestQueue(context)
@@ -103,13 +102,15 @@ class DataRepository  constructor(private val context: Context, private  val pre
                 insertIntoSharedPreferences(email, passHash, personID)
 
                 Log.d("logIn", "SERVER: SUCCESS. SEND TO NEXT ACTIVITY (email: $email and passHash: $passHash)")
-                callback()
+                callback(true)
                 //startActivity(context,Intent(context, TabActivity::class.java), null)
             },
             {
 
                 // TODO: check if due to incorrect password or no contact with server (network/server down)
                 Log.d("logIn", "SERVER: FAILED TO CONNECT")
+                callback(false)
+
             })
 
 
@@ -139,16 +140,39 @@ class DataRepository  constructor(private val context: Context, private  val pre
             remove("email")
             remove("passHash")
             remove("personID")
-
             //val numbOfClaims = preferences.getInt("numberOfClaims",0)
             clear()
-
-
             apply()
         }
     }
 
-    //check for updates from server, use on login
+    fun changePassword(password: String, passHash: String, callback: () -> Unit) {
+        //call  then change in shared pref
+        val email = preferences.getString("email", null)
+        val personID = preferences.getString("personID", null)
+
+
+        val parameters = "em=$email&np=$password&ph=$passHash"
+        val url = "${urlBase}methodPostChangePasswd?$parameters"
+
+        // stringRequest
+        val stringRequest = StringRequest(
+            Request.Method.POST, url,
+            { _ ->
+                // Updating shared preferences
+                insertIntoSharedPreferences(email, passHash, personID)
+                callback()
+                Log.d("changePass", "SERVER: SUCCESS. now (email: $email, password:$password and passHash: $passHash)")
+            },
+            {
+
+                Log.d("changePass", "SERVER: FAILED TO CONNECT")
+            })
+
+        queue?.add(stringRequest)
+        return
+
+    }
 
     //get number of claims
     fun getNumberOfClaims(): Int{
@@ -198,11 +222,11 @@ class DataRepository  constructor(private val context: Context, private  val pre
         val personId = getUserId()
         val parameters =  "id=$personId"
         val url = "${urlBase}getMethodMyClaims?$parameters"
-        sendGetRequest(url)
+        sendMyClaimsRequest(url)
         getAllImages()
     }
 
-    fun sendGetRequest(url: String){
+    fun sendMyClaimsRequest(url: String){
         val jsonRequest = JsonObjectRequest(
             Request.Method.GET, url, null,
             { response ->
@@ -221,7 +245,7 @@ class DataRepository  constructor(private val context: Context, private  val pre
         //for alle bilder
         for(i in 0..preferences.getInt("numberOfClaims", 0)){
             val photoname = preferences.getString("claimPhoto$i", null)
-            if (photoname != null && noFiles(photoname)){
+            if (photoname != null){  //TODO check for existing files:  && noFiles(photoname)){
                 val url = "${urlBase}getMethodDownloadPhoto?$photoname"
                 val stringRequest = StringRequest(
                     Request.Method.GET, url,
@@ -239,10 +263,10 @@ class DataRepository  constructor(private val context: Context, private  val pre
         }
     }
 
-    private fun noFiles(photoName: String): Boolean {
-        return true //se etter filer i
+    /*private fun noFiles(photoName: String): Boolean {
+        return true //se etter filer i gallery
         val storageDir: File = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-    }
+    }*/
 
     private fun createPhotoFile(photoName: String, response: String){
         //lag bildefil og skriv response
