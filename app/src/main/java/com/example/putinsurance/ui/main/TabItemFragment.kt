@@ -1,12 +1,10 @@
 package com.example.putinsurance.ui.main
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.appcompat.widget.SwitchCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -35,26 +33,18 @@ class TabItemFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val root = inflater.inflate(R.layout.fragment_tab_item, container, false)
-        val textView: TextView = root.findViewById(R.id.section_label)
-        val mySwitch : SwitchCompat = root.findViewById(R.id.mySwitch)
+        val textView: TextView = root.findViewById(R.id.claimIdField)
 
         val claimLocView: TextView = root.findViewById(R.id.claimLocField)
         val claimDesView: TextView = root.findViewById(R.id.claimDesField)
         val claimIDView: TextView = root.findViewById(R.id.claimIdField)
 
-        mySwitch.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked)
-                Log.d("TabItemFragment", "Showing photo")
-                //(activity as TabActivity).showPhoto(arguments?.getInt(ARG_SECTION_NUMBER))
-            else
-                Log.d("TabItemFragment", "Showing map")
-                //(activity as TabActivity).showMap(arguments?.getInt(ARG_SECTION_NUMBER))
-        }
 
-        stateViewModel.text.observe(viewLifecycleOwner, Observer<String> {
+
+        /*stateViewModel.text.observe(viewLifecycleOwner, Observer<String> {
             Log.d("TabItemFragment", "Observed a change")
             textView.text = it
-        })
+        })*/
 
         stateViewModel.locText.observe(this.viewLifecycleOwner, Observer<String> {
             claimLocView.text = it

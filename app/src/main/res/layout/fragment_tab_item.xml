@@ -16,22 +16,13 @@
             app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-            android:text="IDTEXT"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/fab_margin"
-            android:id="@+id/section_label"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/claimIdField" />
-
-    <TextView
             android:text="Location"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/fab_margin"
             android:id="@+id/textView6"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/section_label" />
+            app:layout_constraintTop_toBottomOf="@+id/claimIdField" />
 
     <TextView
             android:text="LOCATIONTEXT"
