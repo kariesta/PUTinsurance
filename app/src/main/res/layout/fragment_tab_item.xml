@@ -11,7 +11,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/fab_margin"
-            android:id="@+id/textView5"
+            android:id="@+id/claimIdField"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -22,7 +22,7 @@
             android:layout_margin="@dimen/fab_margin"
             android:id="@+id/section_label"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textView5" />
+            app:layout_constraintTop_toBottomOf="@+id/claimIdField" />
 
     <TextView
             android:text="Location"
@@ -38,7 +38,7 @@
             android:layout_width="wrap_content"
             android:layout_height="15dp"
             android:layout_margin="@dimen/fab_margin"
-            android:id="@+id/textView8"
+            android:id="@+id/claimLocField"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textView6" />
 
@@ -49,14 +49,14 @@
             android:layout_margin="@dimen/fab_margin"
             android:id="@+id/textView9"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textView8" />
+            app:layout_constraintTop_toBottomOf="@+id/claimLocField" />
 
     <TextView
             android:text="DESCRIPTIONTEXT"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/fab_margin"
-            android:id="@+id/textView10"
+            android:id="@+id/claimDesField"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textView9" />
 

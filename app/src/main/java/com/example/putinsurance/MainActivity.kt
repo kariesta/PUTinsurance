@@ -15,11 +15,9 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.FileProvider
 import androidx.navigation.Navigation
-import androidx.viewpager2.widget.ViewPager2
+import com.example.putinsurance.data.Claim
 import com.example.putinsurance.data.DataRepository
 import com.example.putinsurance.ui.main.SectionsStateAdapter
-import com.google.android.material.tabs.TabLayout
-import com.google.android.material.tabs.TabLayoutMediator
 import java.io.File
 import java.io.IOException
 import java.math.BigInteger
@@ -68,10 +66,13 @@ class MainActivity : AppCompatActivity() {
 
         val emailText =  findViewById<TextView>(R.id.editTextTextEmailAddress).text.toString()
         val passwordHash = passwordToHashMD5(findViewById<TextView>(R.id.editTextTextPassword).text.toString())
-
+        val loginCallBack = {
+            dataRepository.getAllClaims()
+            Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_tabFragment)
+        }
 
         // If email and password are in shared pref, nullpointerexception is not thrown
-        val foundUser = dataRepository.userValidation(emailText, passwordHash, view)
+        val foundUser = dataRepository.userValidation(emailText, passwordHash, loginCallBack)
         if (foundUser){
             dataRepository.getAllClaims()
             Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_tabFragment)
@@ -82,6 +83,8 @@ class MainActivity : AppCompatActivity() {
             validateUserByServer(emailText, passwordHash)
         }*/
     }
+
+
 
     // Convert to hash using MD5
     // https://www.geeksforgeeks.org/md5-hash-in-java/ USE MD5
@@ -187,7 +190,7 @@ class MainActivity : AppCompatActivity() {
 
 
         //Legger inn nye verdier
-        dataRepository.addClaim(numbOfClaims, descString, longString, latString, photoName)
+        dataRepository.addClaim(numbOfClaims,Claim(numbOfClaims.toString(), descString, photoName,"$longString-$latString","0"),"")
         //dataRepository.insertClaimIntoSharedPreferences(numbOfClaims, descString, longString, latString, photoName,sharedPref)
         //dataRepository.sendClaimToServer(numbOfClaims, descString, longString, latString, photoName)
         Toast.makeText(this, "New claim added", Toast.LENGTH_SHORT).show()

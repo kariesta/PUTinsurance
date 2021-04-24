@@ -15,4 +15,6 @@ class ClaimFormViewModel : ViewModel() {
 
     //setLocation() -> lat = 34.56, long = 56.34
 
+    //TODO get current location, useful for add claim
+
 }
