@@ -40,12 +40,16 @@ class DataRepository private constructor(private val context: Context, private  
     fun userValidation(
         email: String,
         passHash: String,
-        callback: (Boolean) -> Unit
+        callback: (Boolean,String) -> Unit
     ) {
         try {
             validateUserBySharedPreferences(email, passHash,callback)
         } catch (e: NullPointerException) {
-            validateUserByServer(email, passHash, callback)
+            if(isConnected){
+                validateUserByServer(email, passHash, callback)
+            }else{
+                callback(false,"offline device")
+            }
         }
     }
 
@@ -57,7 +61,7 @@ class DataRepository private constructor(private val context: Context, private  
     private fun validateUserBySharedPreferences(
         email: String,
         passHash: String,
-        callback: (Boolean) -> Unit
+        callback: (Boolean,String) -> Unit
     ) {
 
         val em = preferences.getString("email", null)
@@ -65,27 +69,25 @@ class DataRepository private constructor(private val context: Context, private  
 
         if (em!! == email && ph!! == passHash) {
             Log.d("logIn", "SHARED PREFS: SUCCESS. SEND TO NEXT ACTIVITY")
-            callback(true)
+            callback(true,"")
         } else {
             Log.d("logIn", "SHARED PREFS: FAIL. EMAIL/PASSWORD IS INCORRECT")
-            callback(false)
+            callback(false,"email/password is incorrect")
         }
     }
 
     private fun validateUserByServer(
         email: String,
-        passHash: String, callback: (Boolean) -> Unit
-    ): Boolean {
+        passHash: String, callback: (Boolean, String) -> Unit
+    ) {
 
         // url
         val parameters = "em=$email&ph=$passHash"
         val url = "${urlBase}methodPostRemoteLogin?$parameters"
-
-        return sendLoginRequest(url, callback)
-
+        sendLoginRequest(url, callback)
     }
 
-    private fun sendLoginRequest(url: String, callback: (Boolean) -> Unit): Boolean {
+    private fun sendLoginRequest(url: String, callback: (Boolean, String) -> Unit) {
         // Request queue
         // TODO: Check if we can only have one queue per activity
         //queue = Volley.newRequestQueue(context)
@@ -103,20 +105,19 @@ class DataRepository private constructor(private val context: Context, private  
                 insertIntoSharedPreferences(email, passHash, personID)
 
                 Log.d("logIn", "SERVER: SUCCESS. SEND TO NEXT ACTIVITY (email: $email and passHash: $passHash)")
-                callback(true)
+                callback(true, "")
                 //startActivity(context,Intent(context, TabActivity::class.java), null)
             },
             {
 
                 // TODO: check if due to incorrect password or no contact with server (network/server down)
                 Log.d("logIn", "SERVER: FAILED TO CONNECT")
-                callback(false)
+                callback(false, "failed to connect to server")
 
             })
 
 
         queue?.add(jsonRequest)
-        return false //TODO more stable solution.
     }
 
     private fun insertIntoSharedPreferences(
@@ -223,8 +224,15 @@ class DataRepository private constructor(private val context: Context, private  
         val personId = getUserId()
         val parameters =  "id=$personId"
         val url = "${urlBase}getMethodMyClaims?$parameters"
-        sendMyClaimsRequest(url)
-        getAllImages()
+        if(isConnected){
+            sendMyClaimsRequest(url)
+            getAllImages()
+        } else {
+            offlineRequests.add{
+                sendMyClaimsRequest(url)
+                getAllImages()
+            }
+        }
     }
 
     fun sendMyClaimsRequest(url: String){

@@ -68,12 +68,12 @@ class MainActivity : AppCompatActivity() {
 
         val emailText =  findViewById<TextView>(R.id.editTextTextEmailAddress).text.toString()
         val passwordHash = passwordToHashMD5(findViewById<TextView>(R.id.editTextTextPassword).text.toString())
-        val loginCallBack =  { valid:Boolean ->
+        val loginCallBack =  { valid: Boolean,failReason: String ->
             if(valid){
                 dataRepository.getAllClaimsFromServer()
                 Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_tabFragment)
             } else {
-                Toast.makeText(this,"login failed", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this,"login failed due to $failReason", Toast.LENGTH_SHORT).show()
             }
         }
 
