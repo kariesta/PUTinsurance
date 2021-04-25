@@ -59,10 +59,11 @@
                 android:layout_weight="1">
 
             <androidx.appcompat.widget.SwitchCompat
-                    android:text="Photo"
+                    android:text="Map"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/mySwitch"
+                    android:checked="false"
                     android:layoutDirection="rtl"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
@@ -84,12 +85,29 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-        <fragment
+
+        <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:id="@+id/map"
                 android:layout_weight="10"
-                android:name="com.google.android.gms.maps.SupportMapFragment" />
+                android:id="@+id/fragment_container_view">
+
+           <fragment
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/fragment_photo"
+                    android:name="com.example.putinsurance.PhotoFragment">
+            </fragment>
+
+            <!--<androidx.fragment.app.FragmentContainerView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/fragment_container_view" />-->
+        </FrameLayout>
+
+
+
+
 
 
 

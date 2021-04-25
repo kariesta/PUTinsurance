@@ -33,7 +33,6 @@ class TabItemFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val root = inflater.inflate(R.layout.fragment_tab_item, container, false)
-        val textView: TextView = root.findViewById(R.id.claimIdField)
 
         val claimLocView: TextView = root.findViewById(R.id.claimLocField)
         val claimDesView: TextView = root.findViewById(R.id.claimDesField)
