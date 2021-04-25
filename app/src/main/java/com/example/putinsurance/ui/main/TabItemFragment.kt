@@ -39,12 +39,6 @@ class TabItemFragment : Fragment() {
         val claimIDView: TextView = root.findViewById(R.id.claimIdField)
 
 
-
-        /*stateViewModel.text.observe(viewLifecycleOwner, Observer<String> {
-            Log.d("TabItemFragment", "Observed a change")
-            textView.text = it
-        })*/
-
         stateViewModel.locText.observe(this.viewLifecycleOwner, Observer<String> {
             claimLocView.text = it
         })

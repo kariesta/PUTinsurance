@@ -20,16 +20,14 @@ import com.google.android.material.tabs.TabLayoutMediator
 
 class TabFragment : Fragment() {
 
+    private lateinit var tabViewModel : TabViewModel
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
-        val view = inflater.inflate(R.layout.fragment_tab, container, false);
-
-
-        return view
+        return inflater.inflate(R.layout.fragment_tab, container, false);
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -37,6 +35,8 @@ class TabFragment : Fragment() {
 
         // ViewModel
         //val viewmodel : TabViewModel = ViewModelProviders.of()
+
+        tabViewModel = ViewModelProvider(this.requireActivity()).get(TabViewModel::class.java)
 
         // Adapter
         val sectionsStateAdapter = SectionsStateAdapter(this)
@@ -53,10 +53,19 @@ class TabFragment : Fragment() {
         //tabs.setupWithViewPager(viewPager2)
 
         // Need to do this instead:</LinearLayout>
-        TabLayoutMediator(tabs, viewPager2) {
-                tab, position -> tab.text = tabTitles[position]
+        TabLayoutMediator(tabs, viewPager2) { tab, position ->
+            tab.text = tabTitles[position]
             viewPager2.setCurrentItem(tab.position, true)
+            Log.d("Map - tablayoutmediator", "position is $position")
         }.attach()
+
+        // trying to communicate which page we are on
+        viewPager2.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+                tabViewModel.setIndex(position)
+            }
+        })
 
         // does not work correctly inside here.
         // Need to somehow get information of when it has been

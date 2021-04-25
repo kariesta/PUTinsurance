@@ -207,7 +207,11 @@ class MainActivity : AppCompatActivity() {
     fun logIn(view: View) {
         // Shared Preferences
 
-        val emailText =  findViewById<TextView>(R.id.editTextTextEmailAddress).text.toString()
+        // TODO: Uncomment the lines below and remove this.
+        // Was only done to test on personal phone
+        Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_tabFragment)
+
+       /* val emailText =  findViewById<TextView>(R.id.editTextTextEmailAddress).text.toString()
         val passwordHash = passwordToHashMD5(findViewById<TextView>(R.id.editTextTextPassword).text.toString())
         val loginCallBack =  { valid:Boolean ->
             if(valid){
@@ -219,7 +223,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // If email and password are in shared pref, nullpointerexception is not thrown
-        dataRepository.userValidation(emailText, passwordHash, loginCallBack)
+        dataRepository.userValidation(emailText, passwordHash, loginCallBack)*/
 
     }
 
@@ -369,6 +373,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         dataRepository.changePassword(password,passHash,changePasswordCallBack)
+    }
+
+    fun sendIndex(int: Int?) {
+
     }
 
     /** settings functions end*/
