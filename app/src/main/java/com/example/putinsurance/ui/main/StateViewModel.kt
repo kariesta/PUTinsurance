@@ -23,12 +23,12 @@ class StateViewModel(private val dataRepository: DataRepository) : ViewModel() {
 
     private val _id = MutableLiveData<String>()
     val idText: LiveData<String> = Transformations.map(_id) {
-        "ID $it"
+        "ID: $it"
     }
 
     fun setIndex(index: Int) {
         _index.value = index
-        val claim = dataRepository.getClaimDataFromSharedPrefrences(index-1)
+        val claim = dataRepository.getClaimDataFromSharedPrefrences(5 - index)
         Log.d("PICK_TAB", claim.toString())
         _loc.value = claim.claimLocation
         _desc.value = claim.claimDes
