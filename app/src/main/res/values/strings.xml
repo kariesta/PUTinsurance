@@ -33,7 +33,7 @@
     <!-- Preferences -->
     <string name="gpsAllowance">gps</string>
     <string name="cameraAllowance">cameraroll</string>
-    <string name="sync_title">PLACEHOLDER</string>
+    <string name="sync_title">Only sync data using wifi</string>
     <string name="attachment_title">Download incoming attachments</string>
     <string name="attachment_summary_on">Automatically download attachments for incoming emails
     </string>

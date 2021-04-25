@@ -2,7 +2,9 @@ package com.example.putinsurance
 
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.SharedPreferences
+import android.net.ConnectivityManager
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -31,12 +33,18 @@ class MainActivity : AppCompatActivity() {
     private val REQUEST_IMAGE_CAPTURE = 1
     private var currentPhotoPath: String  = ""
     private lateinit var dataRepository: DataRepository
+    private lateinit var receiver: NetworkReceiver
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         sharedPref = getSharedPreferences("com.example.putinsurance", Context.MODE_PRIVATE)
         dataRepository = InjectorUtils.getDataRepository(this)
+        // Registers BroadcastReceiver to track network connection changes.
+        receiver = NetworkReceiver(dataRepository)
+        val filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)//ConnectivityManager.CONNECTIVITY_ACTION)
+        registerReceiver(receiver, filter)
+        Log.d("networked", "its listening!")
 
         /*// Adapter
         sectionsStateAdapter = SectionsStateAdapter(this)
@@ -113,6 +121,7 @@ class MainActivity : AppCompatActivity() {
 
     /** Claim form functions*/
     // TODO (not baseline func) chose photo from gallery
+    @Suppress("UNUSED_PARAMETER")
     fun takePhoto(view: View) {
         dispatchTakePictureIntent()
     }
@@ -188,29 +197,12 @@ class MainActivity : AppCompatActivity() {
         //dataRepository.insertClaimIntoSharedPreferences(numbOfClaims, descString, longString, latString, photoName,sharedPref)
         //dataRepository.sendClaimToServer(numbOfClaims, descString, longString, latString, photoName)
         Toast.makeText(this, "New claim added", Toast.LENGTH_SHORT).show()
-        Log.d(
-            "ADD_CLAIM", "this will now be updated asynchronously with: ${
-                sharedPref.getInt(
-                    "numberOfClaims",
-                    0
-                )
-            }, ${sharedPref.getString("claimID$numbOfClaims", "Null")}, ${
-                sharedPref.getString(
-                    "claimDes$numbOfClaims",
-                    ""
-                )
-            }, ${sharedPref.getString("claimPhoto$numbOfClaims", "")}, ${
-                sharedPref.getString(
-                    "claimLocation$numbOfClaims",
-                    ""
-                )
-            }"
-        )
         Navigation.findNavController(view).navigate(R.id.action_claimFormFragment_to_tabFragment)
     }
     /** Claim form functions end*/
 
     /** settings functions*/
+    @Suppress("UNUSED_PARAMETER")
     fun changePassword(view: View){
         Log.d("ADD_CLAIM", "this claim add has started")
         val password: String = findViewById<TextView>(R.id.editTextTextPassword).text.toString()

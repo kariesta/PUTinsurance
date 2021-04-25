@@ -4,8 +4,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Environment
 import android.util.Log
-import android.view.View
-import androidx.navigation.Navigation
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonObjectRequest
@@ -15,10 +13,13 @@ import org.json.JSONObject
 import java.io.File
 
 
-class DataRepository private constructor(private val context: Context, private  val preferences: SharedPreferences) {
+class DataRepository private constructor(private val context: Context, private  val preferences: SharedPreferences ) {
 
     companion object {
         @Volatile private var instance: DataRepository? = null
+        const val WIFI = "Wi-Fi"
+        const val ANY = "Any"
+        var isConnected = false
 
         fun getInstance(context: Context, preferences: SharedPreferences) = instance ?: synchronized(this) {
             instance?: DataRepository(context, preferences).also { instance = it}
@@ -29,6 +30,8 @@ class DataRepository private constructor(private val context: Context, private  
     private val port = "8080"
     private val urlBase = "http://$ip:$port/"
     private var queue : RequestQueue? =  Volley.newRequestQueue(context)
+    private var offlineRequests: MutableList<() -> Unit> = mutableListOf()
+    private val SENDDESPITELOGOUT = "SEND_DESPITE_LOGOUT"
 
     //todo value to store weither we are synced with server.
     private var syncedWithServer = false
@@ -313,9 +316,18 @@ class DataRepository private constructor(private val context: Context, private  
     ){
         insertClaimIntoSharedPreferences(numbOfClaims, claim)
         val personID = preferences.getString("personID", "na")
-        addClaimToServer(claim, personID)
-        if (imageString != null){
-            addImageToServer(claim, personID, imageString)
+        if(isConnected){
+            Log.d("HANDLE_OFFLINE", "make request now!")
+            addClaimToServer(claim, personID)
+            if (imageString != null){
+                addImageToServer(claim, personID, imageString)
+            }
+        } else {
+            Log.d("HANDLE_OFFLINE", "make request later!")
+            offlineRequests.add { addClaimToServer(claim, personID) }
+            if (imageString != null){
+                offlineRequests.add { addImageToServer(claim, personID, imageString) }
+            }
         }
     }
 
@@ -336,7 +348,7 @@ class DataRepository private constructor(private val context: Context, private  
     private fun addClaimToServer(claim: Claim, personID: String){
         val status = "0"
         //public String postInsertNewClaim(@RequestParam String userId, @RequestParam String indexUpdateClaim, @RequestParam String newClaimDes, @RequestParam String newClaimPho, @RequestParam String newClaimLoc, @RequestParam String newClaimSta) {
-        val parameters = "userId=$personID&indexUpdateClaim=${claim.claimID}&newClaimDes=${claim.claimDes}&newClaimPho=${claim.claimPhoto}&newClaimLoc=${claim.claimPhoto}&newClaimSta=$status"
+        val parameters = "userId=$personID&indexUpdateClaim=${claim.claimID}&newClaimDes=${claim.claimDes}&newClaimPho=${claim.claimPhoto}&newClaimLoc=${claim.claimLocation}&newClaimSta=$status"
         val url = "http://$ip:$port/postInsertNewClaim?$parameters"
         val stringRequest = StringRequest(
             Request.Method.POST, url,
@@ -352,6 +364,7 @@ class DataRepository private constructor(private val context: Context, private  
                 //handle error if network low.
             }
         )
+        stringRequest.tag = SENDDESPITELOGOUT
         queue?.add(stringRequest)
     }
 
@@ -369,12 +382,13 @@ class DataRepository private constructor(private val context: Context, private  
             },
             //response to unsuccessful request
             { error ->
-                Log.d("ADD_CLAIM", "SERVER: FAILED TO CONNECT WITH $url")
-                Log.d("ADD_CLAIM", "SERVER: FAILED DUE TO ${error.message}")
+                Log.d("ADD_CLAIM_IMAGE", "SERVER: FAILED TO CONNECT WITH $url")
+                Log.d("ADD_CLAIM_IMAGE", "SERVER: FAILED DUE TO ${error.message}")
                 //handle error if server down, note that not connected and put in que again? maybe some resting time.
                 //handle error if network low.
             }
         )
+        stringRequest.tag = SENDDESPITELOGOUT
         queue?.add(stringRequest)
     }
 
@@ -423,4 +437,8 @@ class DataRepository private constructor(private val context: Context, private  
         queue?.add(stringRequest)
     }
 
+    fun doWaitingRequests(){
+        Log.d("HANDLE_OFFLINE", "make offlined requests now")
+        offlineRequests.forEach{req -> req()}
+    }
 }
