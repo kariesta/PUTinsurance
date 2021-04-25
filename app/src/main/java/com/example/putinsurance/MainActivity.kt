@@ -207,10 +207,13 @@ class MainActivity : AppCompatActivity() {
         Log.d("ADD_CLAIM", "this claim add has started")
         val password: String = findViewById<TextView>(R.id.editTextTextPassword).text.toString()
         val passHash = passwordToHashMD5(password)
-        val changePasswordCallBack = {
-            Toast.makeText(this,"password is updated", Toast.LENGTH_SHORT).show()
+        val changePasswordCallBack = { success: Boolean,failReason: String ->
+            if(success) {
+                Toast.makeText(this,"password is updated", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this,"login failed due to $failReason", Toast.LENGTH_SHORT).show()
+            }
         }
-
         dataRepository.changePassword(password,passHash,changePasswordCallBack)
     }
     /** settings functions end*/

@@ -148,7 +148,12 @@ class DataRepository private constructor(private val context: Context, private  
         }
     }
 
-    fun changePassword(password: String, passHash: String, callback: () -> Unit) {
+    fun changePassword(password: String, passHash: String, callback: (Boolean,String) -> Unit) {
+
+        if(isConnected){
+            callback(false, "offline device")
+        }
+
         //call  then change in shared pref
         val email = preferences.getString("email", null)
         val personID = preferences.getString("personID", null)
@@ -163,11 +168,11 @@ class DataRepository private constructor(private val context: Context, private  
             { _ ->
                 // Updating shared preferences
                 insertIntoSharedPreferences(email, passHash, personID)
-                callback()
+                callback(true,"")
                 Log.d("changePass", "SERVER: SUCCESS. now (email: $email, password:$password and passHash: $passHash)")
             },
             {
-
+                callback(false, "failed to connect ot server")
                 Log.d("changePass", "SERVER: FAILED TO CONNECT")
             })
 
@@ -235,7 +240,7 @@ class DataRepository private constructor(private val context: Context, private  
         }
     }
 
-    fun sendMyClaimsRequest(url: String){
+    private fun sendMyClaimsRequest(url: String){
         val jsonRequest = JsonObjectRequest(
             Request.Method.GET, url, null,
             { response ->
@@ -250,7 +255,7 @@ class DataRepository private constructor(private val context: Context, private  
         queue?.add(jsonRequest)
     }
 
-    fun getAllImages(){
+    private fun getAllImages(){
         //for alle bilder
         for(i in 0..preferences.getInt("numberOfClaims", 0)){
             val photoname = preferences.getString("claimPhoto$i", null)
@@ -377,7 +382,7 @@ class DataRepository private constructor(private val context: Context, private  
     }
 
     //	public String postMethodUploadPhoto(@RequestParam String userId, @RequestParam String claimId, @RequestParam String fileName, @RequestParam String imageStringBase64) {
-    fun addImageToServer(claim: Claim, personID: String, imageString: String){
+    private fun addImageToServer(claim: Claim, personID: String, imageString: String){
         //read it to stringbase64
         queue = Volley.newRequestQueue(context)
         val parameters = "userId=$personID&claimId=${claim.claimID}&fileName=${claim.claimPhoto}&imageStringBase64=${imageString}"
@@ -447,6 +452,8 @@ class DataRepository private constructor(private val context: Context, private  
 
     fun doWaitingRequests(){
         Log.d("HANDLE_OFFLINE", "make offlined requests now")
-        offlineRequests.forEach{req -> req()}
+        while (isConnected && offlineRequests.isNotEmpty()){
+            offlineRequests.removeAt(0)()
+        }
     }
 }
