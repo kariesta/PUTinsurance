@@ -411,9 +411,18 @@ class DataRepository private constructor(private val context: Context, private  
     ){
         val status = updateClaimInSharedPreferences(claim)
         val personID = preferences.getString("personID", "na")
-        updateClaimInServer(claim, status, personID)
-        if (imageString != null){
-            addImageToServer(claim, personID, imageString)
+        if(isConnected){
+            Log.d("HANDLE_OFFLINE", "make request now!")
+            updateClaimInServer(claim, status, personID)
+            if (imageString != null){
+                addImageToServer(claim, personID, imageString)
+            }
+        } else {
+            Log.d("HANDLE_OFFLINE", "make request later!")
+            offlineRequests.add { updateClaimInServer(claim, status, personID) }
+            if (imageString != null){
+                offlineRequests.add { addImageToServer(claim, personID, imageString) }
+            }
         }
     }
 
