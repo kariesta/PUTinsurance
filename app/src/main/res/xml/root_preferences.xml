@@ -12,19 +12,19 @@
 
     </PreferenceCategory>
 
-    <!--<PreferenceCategory app:title="@string/sync_header">
+    <PreferenceCategory app:title="@string/sync_header">
 
         <SwitchPreferenceCompat
-                app:key="sync"
+                app:key="only_wi-fi_sync"
                 app:title="@string/sync_title" />
 
-        <SwitchPreferenceCompat
+        <!--<SwitchPreferenceCompat
                 app:key="attachment"
                 app:title="@string/attachment_title"
                 app:summaryOn="@string/attachment_summary_on"
                 app:summaryOff="@string/attachment_summary_off"
-                app:dependency="sync" />
+                app:dependency="sync" />-->
 
-    </PreferenceCategory>-->
+    </PreferenceCategory>
 
 </PreferenceScreen>

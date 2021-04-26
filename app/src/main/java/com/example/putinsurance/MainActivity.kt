@@ -2,7 +2,9 @@ package com.example.putinsurance
 
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.SharedPreferences
+import android.net.ConnectivityManager
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
@@ -17,11 +19,13 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.FileProvider
+import androidx.fragment.app.commit
 import androidx.navigation.Navigation
 import com.example.putinsurance.data.Claim
 import com.example.putinsurance.data.DataRepository
 import com.example.putinsurance.ui.main.SectionsStateAdapter
 import java.io.ByteArrayOutputStream
+import kotlinx.android.synthetic.main.fragment_tab.*
 import java.io.File
 import java.io.IOException
 import java.math.BigInteger
@@ -35,18 +39,26 @@ class MainActivity : AppCompatActivity() {
     private val ip = "10.0.2.2"
     private val port = "8080"
     val MAX_CLAIMS = 5
-    private lateinit var sharedPref: SharedPreferences
     private val REQUEST_IMAGE_CAPTURE = 1
     private lateinit var sectionsStateAdapter: SectionsStateAdapter
     private var currentPhotoPath: String  = ""
+    private lateinit var sharedPref: SharedPreferences
     private var currentPhotoFilename: String  = ""
     private lateinit var dataRepository: DataRepository
+    private lateinit var receiver: NetworkReceiver
+    private val mapTag = "map"
+    private val photoTag = "photo"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         sharedPref = getSharedPreferences("com.example.putinsurance", Context.MODE_PRIVATE)
         dataRepository = InjectorUtils.getDataRepository(this)
+        // Registers BroadcastReceiver to track network connection changes.
+        receiver = NetworkReceiver(dataRepository)
+        val filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)//ConnectivityManager.CONNECTIVITY_ACTION)
+        registerReceiver(receiver, filter)
+        Log.d("networked", "its listening!")
 
         /*// Adapter
         sectionsStateAdapter = SectionsStateAdapter(this)
@@ -63,6 +75,144 @@ class MainActivity : AppCompatActivity() {
         queue?.cancelAll(this)
     }*/
 
+    // Does not work
+    fun restart() {
+        supportFragmentManager
+            .findFragmentByTag("mapTag")?.let {
+                supportFragmentManager
+                    .beginTransaction()
+                    .remove(it)
+                    .commit()
+            }
+
+        supportFragmentManager
+            .findFragmentByTag("photoTag")?.let {
+                supportFragmentManager
+                    .beginTransaction()
+                    .remove(it)
+                    .commit()
+            }
+    }
+
+
+
+    fun addMap() {
+        supportFragmentManager
+            .beginTransaction()
+            .add(R.id.fragment_container_view, MapsFragment(), mapTag)
+            .commit()
+
+        Log.d("addMap", "Testing addMap")
+    }
+
+
+    fun addPhoto() {
+        supportFragmentManager
+            .beginTransaction()
+            .add(R.id.fragment_container_view, PhotoFragment.newInstance(), photoTag)
+            //.hide(supportFragmentManager.findFragmentByTag(photoTag)!!)
+            .commit()
+
+        Log.d("addPhoto", "Testing addPhoto")
+    }
+
+
+
+    // According to this answer, fragment switches should always be done through the activity in which they reside:
+    // https://stackoverflow.com/questions/58891060/android-switch-between-multiple-fragments-in-a-tab
+    // According to this blog post you should hide and show the fragments, especially since map fragment is expensive to set up
+    // https://medium.com/sweet-bytes/switching-between-fragments-without-the-mindless-killing-spree-9efee5f51924
+    // Only works on one tab -> might have to send in the number of the tab to create a unique id.
+    // However, stops working on the one tab after opening a few other tabs.
+    fun showMap(position: Int?) {
+        Log.d("tab", "Showing map")
+
+        //val mapTag = "map_$position"
+        //val photoTag = "photo_$position"
+
+        Log.d("tab", mapTag)
+        Log.d("tab", photoTag)
+
+        // According to one answer here (by Patrick Favre) detach and attach is more
+        // memory efficient:
+        // https://stackoverflow.com/questions/22713128/how-can-i-switch-between-two-fragments-without-recreating-the-fragments-each-ti
+        if (supportFragmentManager.findFragmentByTag(mapTag) != null) {
+            Log.d("showMap", "mapTag != null")
+            Log.d("showMap != null", "${supportFragmentManager.findFragmentByTag(mapTag)!!.isVisible}")
+            supportFragmentManager
+                .beginTransaction()
+                .attach(supportFragmentManager.findFragmentByTag(mapTag)!!) // this is scary
+                .commit()
+        } else {
+            // I guess we need our own Map fragment as well
+            Log.d("showMap", "mapTag == null")
+            supportFragmentManager
+                .beginTransaction()
+                .add(R.id.fragment_container_view, MapsFragment(), mapTag) // crashes. need to create my own fragment. think this is wrong -> yes, you have just added the standard map. Need to somehow get
+                .commit()
+        }
+
+       /* if (supportFragmentManager.findFragmentByTag(photoTag) != null) {
+            Log.d("showMap", "photoTag != null")
+            supportFragmentManager
+                .beginTransaction()
+                .detach(supportFragmentManager.findFragmentByTag(photoTag)!!)
+                .commit()
+        }
+*/
+        if (supportFragmentManager.findFragmentById(R.id.fragment_photo) != null) {
+            Log.d("showMap", "photoTag != null")
+            supportFragmentManager
+                .beginTransaction()
+                .detach(supportFragmentManager.findFragmentById(R.id.fragment_photo)!!)
+                .commit()
+        }
+    }
+
+    fun showPhoto(position: Int?) {
+        Log.d("tab", "Showing photo")
+
+        //val mapTag = "map_$position"
+        //val photoTag = "photo_$position"
+
+       /* if (supportFragmentManager.findFragmentByTag(photoTag) != null) {
+            Log.d("showPhoto", "photoTag != null")
+            supportFragmentManager
+                .beginTransaction()
+                .attach(supportFragmentManager.findFragmentByTag(photoTag)!!)
+                .commit()
+        } else {
+            Log.d("showPhoto", "photoTag == null")
+           supportFragmentManager
+                .beginTransaction()
+                .add(R.id.fragment_container_view, PhotoFragment.newInstance(), photoTag)
+               .commit()
+
+        }*/
+
+        // will not work on first switch as map is not added yet.
+        /*if (supportFragmentManager.findFragmentByTag(mapTag) != null) {
+            Log.d("showPhoto", "mapTag != null")
+            supportFragmentManager
+                .beginTransaction()
+                .detach(supportFragmentManager.findFragmentByTag(mapTag)!!)
+                //.hide(supportFragmentManager.findFragmentByTag(mapTag)!!)
+                .commit()
+        }*/
+
+        if (supportFragmentManager.findFragmentByTag(mapTag) != null) {
+            Log.d("showPhoto", "mapTag != null")
+            supportFragmentManager
+                .beginTransaction()
+                .detach(supportFragmentManager.findFragmentByTag(mapTag)!!)
+                .commit()
+        }
+
+    }
+
+    // OnCheckedChangeListener is recommended by stack overflow:
+    // https://stackoverflow.com/questions/11278507/android-widget-switch-on-off-event-listener
+
     /**Login functions*/
     // TODO: check if SINGLETON of shared preferences and queue is recommended
     fun logIn(view: View) {
@@ -70,12 +220,12 @@ class MainActivity : AppCompatActivity() {
 
         val emailText =  findViewById<TextView>(R.id.editTextTextEmailAddress).text.toString()
         val passwordHash = passwordToHashMD5(findViewById<TextView>(R.id.editTextTextPassword).text.toString())
-        val loginCallBack =  { valid:Boolean ->
+        val loginCallBack =  { valid: Boolean,failReason: String ->
             if(valid){
                 dataRepository.getAllClaimsFromServer()
                 Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_tabFragment)
             } else {
-                Toast.makeText(this,"login failed", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this,"login failed due to $failReason", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -123,6 +273,7 @@ class MainActivity : AppCompatActivity() {
 
     /** Claim form functions*/
     // TODO (not baseline func) chose photo from gallery
+    @Suppress("UNUSED_PARAMETER")
     fun takePhoto(view: View) {
         dispatchTakePictureIntent()
     }
@@ -207,39 +358,30 @@ class MainActivity : AppCompatActivity() {
         //dataRepository.insertClaimIntoSharedPreferences(numbOfClaims, descString, longString, latString, photoName,sharedPref)
         //dataRepository.sendClaimToServer(numbOfClaims, descString, longString, latString, photoName)
         Toast.makeText(this, "New claim added", Toast.LENGTH_SHORT).show()
-        Log.d(
-            "ADD_CLAIM", "this will now be updated asynchronously with: ${
-                sharedPref.getInt(
-                    "numberOfClaims",
-                    0
-                )
-            }, ${sharedPref.getString("claimID$numbOfClaims", "Null")}, ${
-                sharedPref.getString(
-                    "claimDes$numbOfClaims",
-                    ""
-                )
-            }, ${sharedPref.getString("claimPhoto$numbOfClaims", "")}, ${
-                sharedPref.getString(
-                    "claimLocation$numbOfClaims",
-                    ""
-                )
-            }"
-        )
         Navigation.findNavController(view).navigate(R.id.action_claimFormFragment_to_tabFragment)
     }
     /** Claim form functions end*/
 
     /** settings functions*/
+    @Suppress("UNUSED_PARAMETER")
     fun changePassword(view: View){
         Log.d("ADD_CLAIM", "this claim add has started")
         val password: String = findViewById<TextView>(R.id.editTextTextPassword).text.toString()
         val passHash = passwordToHashMD5(password)
-        val changePasswordCallBack = {
-            Toast.makeText(this,"password is updated", Toast.LENGTH_SHORT).show()
+        val changePasswordCallBack = { success: Boolean,failReason: String ->
+            if(success) {
+                Toast.makeText(this,"password is updated", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this,"login failed due to $failReason", Toast.LENGTH_SHORT).show()
+            }
         }
-
         dataRepository.changePassword(password,passHash,changePasswordCallBack)
     }
+
+    fun sendIndex(int: Int?) {
+
+    }
+
     /** settings functions end*/
 
 }

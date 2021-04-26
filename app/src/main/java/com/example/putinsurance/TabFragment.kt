@@ -9,6 +9,7 @@ import androidx.appcompat.widget.SwitchCompat
 import com.google.android.material.tabs.TabLayout
 import androidx.viewpager2.widget.ViewPager2
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import com.example.putinsurance.ui.main.SectionsStateAdapter
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -19,19 +20,23 @@ import com.google.android.material.tabs.TabLayoutMediator
 
 class TabFragment : Fragment() {
 
+    private lateinit var tabViewModel : TabViewModel
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
-        val view = inflater.inflate(R.layout.fragment_tab, container, false);
-
-        return view
+        return inflater.inflate(R.layout.fragment_tab, container, false);
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // ViewModel
+        //val viewmodel : TabViewModel = ViewModelProviders.of()
+
+        tabViewModel = ViewModelProvider(this.requireActivity()).get(TabViewModel::class.java)
 
         // Adapter
         val sectionsStateAdapter = SectionsStateAdapter(this)
@@ -48,10 +53,19 @@ class TabFragment : Fragment() {
         //tabs.setupWithViewPager(viewPager2)
 
         // Need to do this instead:</LinearLayout>
-        TabLayoutMediator(tabs, viewPager2) {
-                tab, position -> tab.text = tabTitles[position]
+        TabLayoutMediator(tabs, viewPager2) { tab, position ->
+            tab.text = tabTitles[position]
             viewPager2.setCurrentItem(tab.position, true)
+            Log.d("Map - tablayoutmediator", "position is $position")
         }.attach()
+
+        // trying to communicate which page we are on
+        viewPager2.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+                tabViewModel.setIndex(position)
+            }
+        })
 
         // does not work correctly inside here.
         // Need to somehow get information of when it has been
@@ -59,23 +73,70 @@ class TabFragment : Fragment() {
         // then just zoom in to correct one
         val mySwitch : SwitchCompat = view.findViewById(R.id.mySwitch)
 
+
         mySwitch.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked)
-                Log.d("TabItemFragment", "Showing photo")
-            //(activity as TabActivity).showPhoto(arguments?.getInt(ARG_SECTION_NUMBER))
-            else
-                Log.d("TabItemFragment", "Showing map")
-            //(activity as TabActivity).showMap(arguments?.getInt(ARG_SECTION_NUMBER))
+            if (isChecked) {
+                Log.d("TabFragment", "Showing map")
+                (activity as MainActivity).showMap(1)
+                //(activity as TabActivity).showMap(arguments?.getInt(ARG_SECTION_NUMBER))
+            } else {
+                Log.d("TabFragment", "Showing photo")
+                (activity as MainActivity).showPhoto(1)
+                //(activity as TabActivity).showPhoto(arguments?.getInt(ARG_SECTION_NUMBER))
+            }
         }
 
-        showMap()
+        //mySwitch.isChecked
+        //if (mySwitch.isChecked) {
+        //    mySwitch.callOnClick() // only changes from unchecked to checked
+        //}
+
+
+        // mySwitch.isChecked = false
+
+        //mySwitch.callOnClick() // only changes from checked to unchecked??
+
+        // mySwitch.isChecked = true
+
+        // TODO: WHY???
+        // for some reason this prevents the bug.
+       /*if (mySwitch.isChecked) {
+           // I don't think this is ever called
+            Log.d("TabFragment", "showMap")
+            (activity as MainActivity).showMap(1)
+        }
+        else {
+            Log.d("TabFragment", "showPhoto")
+            (activity as MainActivity).showPhoto(1)
+        }*/
+
+        // I think it's because you need to detach the map fragment or something
+        Log.d("TabFragment", "showPhoto")
+        (activity as MainActivity).showPhoto(1)
+
+
+
+
+        //addMap()
+        //addPhoto()
+
+       //(activity as MainActivity).restart()
+
+
+    }
+
+    override fun onStop() {
+        super.onStop()
+        val mySwitch : SwitchCompat? = view?.findViewById(R.id.mySwitch)
+        mySwitch?.setOnCheckedChangeListener(null)
+        mySwitch?.isChecked = false
     }
 
     private fun showMap() {
-        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
-        mapFragment?.getMapAsync(callback)
+        //val mapFragment = childFragmentManager.findFragmentById(R.id.fragment_container_view) as MapsFragment?
+        //mapFragment?.getMapAsync(callback)
+        (activity as MainActivity).showMap(1)
     }
-
 
     private val callback = OnMapReadyCallback { googleMap ->
 
@@ -93,6 +154,7 @@ class TabFragment : Fragment() {
     }
 
 
+
     fun newClaim(view: View) {
         //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
         //    .setAction("Action", null).show()
@@ -106,7 +168,7 @@ class TabFragment : Fragment() {
     // https://medium.com/sweet-bytes/switching-between-fragments-without-the-mindless-killing-spree-9efee5f51924
     // Only works on one tab -> might have to send in the number of the tab to create a unique id.
     // However, stops working on the one tab after opening a few other tabs.
-    fun showMap(position: Int?) {
+    /*fun showMap(position: Int?) {
         Log.d("tab", "Showing map")
 
         val mapTag = "map_$position"
@@ -115,7 +177,7 @@ class TabFragment : Fragment() {
         Log.d("tab", mapTag)
         Log.d("tab", photoTag)
 
-        /*if (supportFragmentManager.findFragmentByTag(mapTag) != null) {
+        *//*if (supportFragmentManager.findFragmentByTag(mapTag) != null) {
             supportFragmentManager
                 .beginTransaction()
                 .show(supportFragmentManager.findFragmentByTag(mapTag)!!) // this is scary
@@ -132,7 +194,7 @@ class TabFragment : Fragment() {
                 .beginTransaction()
                 .hide(supportFragmentManager.findFragmentByTag(photoTag)!!)
                 .commit()
-        }*/
+        }*//*
     }
 
     fun showPhoto(position: Int?) {
@@ -142,7 +204,7 @@ class TabFragment : Fragment() {
         val photoTag = "photo_$position"
 
         // will not work on first switch as map is not added yet.
-        /*if (supportFragmentManager.findFragmentByTag(mapTag) != null) {
+        *//*if (supportFragmentManager.findFragmentByTag(mapTag) != null) {
             supportFragmentManager
                 .beginTransaction()
                 .hide(supportFragmentManager.findFragmentByTag(mapTag)!!)
@@ -152,11 +214,11 @@ class TabFragment : Fragment() {
         //supportFragmentManager.beginTransaction().add(R.id.frameLayout)
 
         val image : ImageView = findViewById(R.id.imageView)
-        imageView.bringToFront()*/
+        imageView.bringToFront()*//*
     }
 
     // OnCheckedChangeListener is recommended by stack overflow:
     // https://stackoverflow.com/questions/11278507/android-widget-switch-on-off-event-listener
-
+*/
 
 }

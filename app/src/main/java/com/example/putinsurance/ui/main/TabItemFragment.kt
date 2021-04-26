@@ -33,18 +33,11 @@ class TabItemFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val root = inflater.inflate(R.layout.fragment_tab_item, container, false)
-        val textView: TextView = root.findViewById(R.id.claimIdField)
 
         val claimLocView: TextView = root.findViewById(R.id.claimLocField)
         val claimDesView: TextView = root.findViewById(R.id.claimDesField)
         val claimIDView: TextView = root.findViewById(R.id.claimIdField)
 
-
-
-        /*stateViewModel.text.observe(viewLifecycleOwner, Observer<String> {
-            Log.d("TabItemFragment", "Observed a change")
-            textView.text = it
-        })*/
 
         stateViewModel.locText.observe(this.viewLifecycleOwner, Observer<String> {
             claimLocView.text = it
