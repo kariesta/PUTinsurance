@@ -1,4 +1,4 @@
-package com.example.putinsurance
+package com.example.putinsurance.fragments
 
 import androidx.fragment.app.Fragment
 
@@ -9,6 +9,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import com.example.putinsurance.R
+import com.example.putinsurance.viewmodels.TabViewModel
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap

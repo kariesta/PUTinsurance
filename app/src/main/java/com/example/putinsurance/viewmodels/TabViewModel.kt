@@ -1,4 +1,4 @@
-package com.example.putinsurance
+package com.example.putinsurance.viewmodels
 
 import android.util.Log
 import androidx.lifecycle.MutableLiveData

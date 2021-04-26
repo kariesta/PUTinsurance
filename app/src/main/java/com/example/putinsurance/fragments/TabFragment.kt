@@ -1,4 +1,4 @@
-package com.example.putinsurance
+package com.example.putinsurance.fragments
 
 import android.os.Bundle
 import android.util.Log
@@ -10,12 +10,10 @@ import com.google.android.material.tabs.TabLayout
 import androidx.viewpager2.widget.ViewPager2
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import com.example.putinsurance.MainActivity
+import com.example.putinsurance.R
+import com.example.putinsurance.viewmodels.TabViewModel
 import com.example.putinsurance.ui.main.SectionsStateAdapter
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.tabs.TabLayoutMediator
 
 class TabFragment : Fragment() {

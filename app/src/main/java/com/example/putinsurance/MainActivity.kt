@@ -15,11 +15,11 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.commit
 import androidx.navigation.Navigation
 import com.example.putinsurance.data.Claim
 import com.example.putinsurance.data.DataRepository
-import kotlinx.android.synthetic.main.fragment_tab.*
+import com.example.putinsurance.fragments.MapsFragment
+import com.example.putinsurance.fragments.PhotoFragment
 import java.io.File
 import java.io.IOException
 import java.math.BigInteger

@@ -1,25 +1,15 @@
-package com.example.putinsurance
+package com.example.putinsurance.fragments
 
-import android.content.Context
-import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.android.volley.Request
-import com.android.volley.RequestQueue
-import com.android.volley.toolbox.JsonObjectRequest
-import com.android.volley.toolbox.Volley
-import com.example.putinsurance.data.DataRepository
-import java.math.BigInteger
-import java.security.MessageDigest
+import com.example.putinsurance.viewmodels.LoginViewModel
+import com.example.putinsurance.R
 
 class LoginFragment : Fragment() {
 

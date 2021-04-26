@@ -1,4 +1,4 @@
-package com.example.putinsurance
+package com.example.putinsurance.fragments
 
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
@@ -8,6 +8,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
+import com.example.putinsurance.R
+import com.example.putinsurance.viewmodels.TabViewModel
 import kotlinx.android.synthetic.main.photo_fragment.*
 
 class PhotoFragment : Fragment() {

@@ -95,7 +95,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:id="@+id/fragment_photo"
-                    android:name="com.example.putinsurance.PhotoFragment">
+                    android:name="com.example.putinsurance.fragments.PhotoFragment">
             </fragment>-->
 
             <!--<androidx.fragment.app.FragmentContainerView
