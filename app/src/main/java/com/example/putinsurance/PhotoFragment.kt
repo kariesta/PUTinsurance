@@ -39,7 +39,6 @@ class PhotoFragment : Fragment() {
                 3 -> photo_accident.setImageResource(R.drawable.car_crash_0)
                 4 -> photo_accident.setImageResource(R.drawable.car_crash_0)
             }
-
         })
     }
 

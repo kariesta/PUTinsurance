@@ -75,6 +75,10 @@ class MainActivity : AppCompatActivity() {
         // memory efficient:
         // https://stackoverflow.com/questions/22713128/how-can-i-switch-between-two-fragments-without-recreating-the-fragments-each-ti
         if (supportFragmentManager.findFragmentByTag(mapTag) != null) {
+
+            if (supportFragmentManager.findFragmentByTag(mapTag)?.isAdded == true)
+                detachFragment(mapTag)
+
             Log.d("showMap", "mapTag != null")
             Log.d("showMap != null", "${supportFragmentManager.findFragmentByTag(mapTag)!!.isVisible}")
             attachFragment(mapTag)
@@ -101,6 +105,10 @@ class MainActivity : AppCompatActivity() {
         Log.d("Switch", "Showing photo")
 
        if (supportFragmentManager.findFragmentByTag(photoTag) != null) {
+
+           if (supportFragmentManager.findFragmentByTag(photoTag)?.isAdded == true)
+               detachFragment(photoTag)
+
             Log.d("showPhoto", "photoTag != null")
             attachFragment(photoTag)
         } else {
@@ -136,7 +144,7 @@ class MainActivity : AppCompatActivity() {
             .commit()
     }
 
-    fun detachBoth() {
+    /*fun detachBoth() {
 
         if (supportFragmentManager.findFragmentByTag(mapTag)?.isAdded == true)
             detachFragment(mapTag)
@@ -144,7 +152,7 @@ class MainActivity : AppCompatActivity() {
         if (supportFragmentManager.findFragmentByTag(photoTag)?.isAdded == true)
             detachFragment(photoTag)
     }
-
+*/
     // OnCheckedChangeListener is recommended by stack overflow:
     // https://stackoverflow.com/questions/11278507/android-widget-switch-on-off-event-listener
 

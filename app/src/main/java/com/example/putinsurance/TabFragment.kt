@@ -110,25 +110,12 @@ class TabFragment : Fragment() {
             (activity as MainActivity).showPhoto(1)
         }
 
-        // I think it's because you need to detach the map fragment or something
-        //Log.d("TabFragment", "showPhoto")
-        //(activity as MainActivity).showPhoto(1)
-
-
-
-
-        //addMap()
-        //addPhoto()
-
-       //(activity as MainActivity).restart()
-
-
     }
 
     // Image is loaded even though map is shown
     override fun onStop() {
         super.onStop()
-        (activity as MainActivity).detachBoth()
+        //(activity as MainActivity).detachBoth()
         //val mySwitch : SwitchCompat? = view?.findViewById(R.id.mySwitch)
         //mySwitch?.setOnCheckedChangeListener(null)
         //mySwitch?.isChecked = false
