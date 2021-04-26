@@ -7,7 +7,7 @@
 
     <fragment
             android:id="@+id/claimFormFragment"
-            android:name="com.example.putinsurance.ClaimFormFragment"
+            android:name="com.example.putinsurance.fragments.ClaimFormFragment"
             android:label="claim_form_fragment"
             tools:layout="@layout/claim_form_fragment" >
         <action
@@ -16,7 +16,7 @@
     </fragment>
     <fragment
             android:id="@+id/loginFragment"
-            android:name="com.example.putinsurance.LoginFragment"
+            android:name="com.example.putinsurance.fragments.LoginFragment"
             android:label="LoginFragment" >
         <action
                 android:id="@+id/action_loginFragment_to_tabFragment"
@@ -26,7 +26,7 @@
     </fragment>
     <fragment
             android:id="@+id/tabFragment"
-            android:name="com.example.putinsurance.TabFragment"
+            android:name="com.example.putinsurance.fragments.TabFragment"
             android:label="tab_fragment"
             tools:layout="@layout/fragment_tab" >
         <action
@@ -38,7 +38,7 @@
     </fragment>
     <fragment
             android:id="@+id/settingsFragment"
-            android:name="com.example.putinsurance.SettingsFragment"
+            android:name="com.example.putinsurance.fragments.SettingsFragment"
             android:label="SettingsFragment"
             tools:layout="@layout/settings_fragment">
         <action

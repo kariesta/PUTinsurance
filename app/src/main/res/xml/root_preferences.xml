@@ -1,4 +1,5 @@
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <PreferenceCategory app:title="@string/accesss_header">
 
@@ -8,7 +9,8 @@
 
         <SwitchPreferenceCompat
                 app:key="cameraroll"
-                app:title="@string/cameraAllowance" />
+                app:title="@string/cameraAllowance"
+                android:gravity="fill_vertical|end" />
 
     </PreferenceCategory>
 

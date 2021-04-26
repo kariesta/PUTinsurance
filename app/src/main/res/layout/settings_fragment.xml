@@ -4,7 +4,7 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".SettingsFragment">
+        tools:context=".fragments.SettingsFragment">
 
     <ScrollView
             android:layout_width="match_parent"
@@ -59,9 +59,9 @@
             </LinearLayout>
 
             <androidx.fragment.app.FragmentContainerView
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:name="com.example.putinsurance.preferencesFragment"
+                    android:name="com.example.putinsurance.fragments.PreferencesFragment"
                     android:id="@+id/fragment" />
 
             <!--button-icon from https://fonts.google.com/icons-->

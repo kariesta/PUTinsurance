@@ -16,9 +16,13 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.FileProvider
+import androidx.fragment.app.Fragment
 import androidx.navigation.Navigation
 import com.example.putinsurance.data.Claim
 import com.example.putinsurance.data.DataRepository
+import com.example.putinsurance.fragments.MapsFragment
+import com.example.putinsurance.fragments.PhotoFragment
+import com.example.putinsurance.utils.InjectorUtils
 import java.io.File
 import java.io.IOException
 import java.math.BigInteger
@@ -65,47 +69,6 @@ class MainActivity : AppCompatActivity() {
         queue?.cancelAll(this)
     }*/
 
-    // Does not work
-    fun restart() {
-        supportFragmentManager
-            .findFragmentByTag("mapTag")?.let {
-                supportFragmentManager
-                    .beginTransaction()
-                    .remove(it)
-                    .commit()
-            }
-
-        supportFragmentManager
-            .findFragmentByTag("photoTag")?.let {
-                supportFragmentManager
-                    .beginTransaction()
-                    .remove(it)
-                    .commit()
-            }
-    }
-
-
-
-    fun addMap() {
-        supportFragmentManager
-            .beginTransaction()
-            .add(R.id.fragment_container_view, MapsFragment(), mapTag)
-            .commit()
-
-        Log.d("addMap", "Testing addMap")
-    }
-
-
-    fun addPhoto() {
-        supportFragmentManager
-            .beginTransaction()
-            .add(R.id.fragment_container_view, PhotoFragment.newInstance(), photoTag)
-            //.hide(supportFragmentManager.findFragmentByTag(photoTag)!!)
-            .commit()
-
-        Log.d("addPhoto", "Testing addPhoto")
-    }
-
 
 
     // According to this answer, fragment switches should always be done through the activity in which they reside:
@@ -115,7 +78,7 @@ class MainActivity : AppCompatActivity() {
     // Only works on one tab -> might have to send in the number of the tab to create a unique id.
     // However, stops working on the one tab after opening a few other tabs.
     fun showMap(position: Int?) {
-        Log.d("tab", "Showing map")
+        Log.d("Switch", "Showing map")
 
         //val mapTag = "map_$position"
         //val photoTag = "photo_$position"
@@ -127,79 +90,84 @@ class MainActivity : AppCompatActivity() {
         // memory efficient:
         // https://stackoverflow.com/questions/22713128/how-can-i-switch-between-two-fragments-without-recreating-the-fragments-each-ti
         if (supportFragmentManager.findFragmentByTag(mapTag) != null) {
+
+            if (supportFragmentManager.findFragmentByTag(mapTag)?.isAdded == true)
+                detachFragment(mapTag)
+
             Log.d("showMap", "mapTag != null")
             Log.d("showMap != null", "${supportFragmentManager.findFragmentByTag(mapTag)!!.isVisible}")
-            supportFragmentManager
-                .beginTransaction()
-                .attach(supportFragmentManager.findFragmentByTag(mapTag)!!) // this is scary
-                .commit()
+            attachFragment(mapTag)
         } else {
-            // I guess we need our own Map fragment as well
             Log.d("showMap", "mapTag == null")
-            supportFragmentManager
-                .beginTransaction()
-                .add(R.id.fragment_container_view, MapsFragment(), mapTag) // crashes. need to create my own fragment. think this is wrong -> yes, you have just added the standard map. Need to somehow get
-                .commit()
+            addFragment(MapsFragment(), mapTag)
         }
 
-       /* if (supportFragmentManager.findFragmentByTag(photoTag) != null) {
+        if (supportFragmentManager.findFragmentByTag(photoTag) != null) {
             Log.d("showMap", "photoTag != null")
-            supportFragmentManager
-                .beginTransaction()
-                .detach(supportFragmentManager.findFragmentByTag(photoTag)!!)
-                .commit()
+            detachFragment(photoTag)
         }
-*/
-        if (supportFragmentManager.findFragmentById(R.id.fragment_photo) != null) {
+
+        /*if (supportFragmentManager.findFragmentById(R.id.fragment_photo) != null) {
             Log.d("showMap", "photoTag != null")
             supportFragmentManager
                 .beginTransaction()
                 .detach(supportFragmentManager.findFragmentById(R.id.fragment_photo)!!)
                 .commit()
-        }
+        }*/
     }
 
     fun showPhoto(position: Int?) {
-        Log.d("tab", "Showing photo")
+        Log.d("Switch", "Showing photo")
 
-        //val mapTag = "map_$position"
-        //val photoTag = "photo_$position"
+       if (supportFragmentManager.findFragmentByTag(photoTag) != null) {
 
-       /* if (supportFragmentManager.findFragmentByTag(photoTag) != null) {
+           if (supportFragmentManager.findFragmentByTag(photoTag)?.isAdded == true)
+               detachFragment(photoTag)
+
             Log.d("showPhoto", "photoTag != null")
-            supportFragmentManager
-                .beginTransaction()
-                .attach(supportFragmentManager.findFragmentByTag(photoTag)!!)
-                .commit()
+            attachFragment(photoTag)
         } else {
             Log.d("showPhoto", "photoTag == null")
-           supportFragmentManager
-                .beginTransaction()
-                .add(R.id.fragment_container_view, PhotoFragment.newInstance(), photoTag)
-               .commit()
-
-        }*/
-
-        // will not work on first switch as map is not added yet.
-        /*if (supportFragmentManager.findFragmentByTag(mapTag) != null) {
-            Log.d("showPhoto", "mapTag != null")
-            supportFragmentManager
-                .beginTransaction()
-                .detach(supportFragmentManager.findFragmentByTag(mapTag)!!)
-                //.hide(supportFragmentManager.findFragmentByTag(mapTag)!!)
-                .commit()
-        }*/
+            addFragment(PhotoFragment.newInstance(), photoTag)
+        }
 
         if (supportFragmentManager.findFragmentByTag(mapTag) != null) {
             Log.d("showPhoto", "mapTag != null")
-            supportFragmentManager
-                .beginTransaction()
-                .detach(supportFragmentManager.findFragmentByTag(mapTag)!!)
-                .commit()
+            detachFragment(mapTag)
         }
 
     }
 
+    private fun addFragment(fragment : Fragment, tag : String) {
+        supportFragmentManager
+            .beginTransaction()
+            .add(R.id.fragment_container_view, fragment, tag)
+            .commit()
+    }
+
+    private fun attachFragment(tag : String) {
+        supportFragmentManager
+            .beginTransaction()
+            .attach(supportFragmentManager.findFragmentByTag(tag)!!)
+            .commit()
+    }
+
+    private fun detachFragment(tag : String) {
+        supportFragmentManager
+            .beginTransaction()
+            .detach(supportFragmentManager.findFragmentByTag(tag)!!)
+            .commit()
+    }
+
+    /*fun detachBoth() {
+
+        if (supportFragmentManager.findFragmentByTag(mapTag)?.isAdded == true)
+            detachFragment(mapTag)
+
+        if (supportFragmentManager.findFragmentByTag(photoTag)?.isAdded == true)
+            detachFragment(photoTag)
+    }
+*/
     // OnCheckedChangeListener is recommended by stack overflow:
     // https://stackoverflow.com/questions/11278507/android-widget-switch-on-off-event-listener
 
@@ -343,7 +311,7 @@ class MainActivity : AppCompatActivity() {
         val imageString: String = android.util.Base64.encodeToString(imageBytes,android.util.Base64.DEFAULT)
 
         //Legger inn nye verdier
-        dataRepository.addClaim(numbOfClaims,Claim(numbOfClaims.toString(), descString, photoName,"$longString-$latString","0"),imageString)
+        dataRepository.addClaim(numbOfClaims,Claim(numbOfClaims.toString(), descString, photoName,"$latString-$longString","0"),imageString)
         //dataRepository.insertClaimIntoSharedPreferences(numbOfClaims, descString, longString, latString, photoName,sharedPref)
         //dataRepository.sendClaimToServer(numbOfClaims, descString, longString, latString, photoName)
         Toast.makeText(this, "New claim added", Toast.LENGTH_SHORT).show()

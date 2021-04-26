@@ -1,4 +1,4 @@
-package com.example.putinsurance
+package com.example.putinsurance.fragments
 
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
@@ -9,6 +9,8 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.lifecycle.Observer
+import com.example.putinsurance.R
+import com.example.putinsurance.viewmodels.ClaimFormViewModel
 
 class ClaimFormFragment : Fragment() {
 

@@ -1,10 +1,8 @@
 package com.example.putinsurance.ui.main
 
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import com.example.putinsurance.TabFragment
 
 
 /**
@@ -21,6 +19,7 @@ class SectionsStateAdapter(fragment : Fragment) :
         return TabItemFragment.newInstance(position + 1)
     }
 
+    //TODO: update based on number of claims
     override fun getItemCount(): Int {
         // Show 5 total pages.
         return 5

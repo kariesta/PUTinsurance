@@ -63,7 +63,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/mySwitch"
-                    android:checked="false"
                     android:layoutDirection="rtl"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
@@ -92,12 +91,12 @@
                 android:layout_weight="10"
                 android:id="@+id/fragment_container_view">
 
-           <fragment
+           <!--<fragment
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:id="@+id/fragment_photo"
-                    android:name="com.example.putinsurance.PhotoFragment">
-            </fragment>
+                    android:name="com.example.putinsurance.fragments.PhotoFragment">
+            </fragment>-->
 
             <!--<androidx.fragment.app.FragmentContainerView
                     android:layout_width="match_parent"
