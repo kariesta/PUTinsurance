@@ -12,7 +12,6 @@ import android.provider.MediaStore
 import android.util.Base64.DEFAULT
 import android.util.Base64.encodeToString
 import android.util.Log
-import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -47,7 +46,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         sharedPref = getSharedPreferences("com.example.putinsurance", Context.MODE_PRIVATE)
-        dataRepository = DataRepository(this,sharedPref)
+        dataRepository = InjectorUtils.getDataRepository(this)
 
         /*// Adapter
         sectionsStateAdapter = SectionsStateAdapter(this)
@@ -73,7 +72,7 @@ class MainActivity : AppCompatActivity() {
         val passwordHash = passwordToHashMD5(findViewById<TextView>(R.id.editTextTextPassword).text.toString())
         val loginCallBack =  { valid:Boolean ->
             if(valid){
-                dataRepository.getAllClaims()
+                dataRepository.getAllClaimsFromServer()
                 Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_tabFragment)
             } else {
                 Toast.makeText(this,"login failed", Toast.LENGTH_SHORT).show()
