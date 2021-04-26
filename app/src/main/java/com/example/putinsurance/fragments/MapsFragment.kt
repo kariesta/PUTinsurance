@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.putinsurance.R
+import com.example.putinsurance.data.Claim
 import com.example.putinsurance.utils.InjectorUtils
 import com.example.putinsurance.viewmodels.TabViewModel
 
@@ -63,9 +64,9 @@ class MapsFragment : Fragment() {
 
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
 
-        tabViewModel.location.observe(viewLifecycleOwner, Observer<String> {
+        tabViewModel.claim.observe(viewLifecycleOwner, Observer<Claim> {
             Log.d("Switch", "Observed change in index$it")
-            coordinates = it //"${it*10}-${it*15}"
+            coordinates = it.claimLocation //"${it*10}-${it*15}"
             mapFragment?.getMapAsync(callback)
         })
 

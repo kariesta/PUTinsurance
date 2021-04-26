@@ -1,9 +1,9 @@
 package com.example.putinsurance.viewmodels
 
-import android.graphics.Bitmap
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.putinsurance.data.Claim
 import com.example.putinsurance.data.DataRepository
 
 
@@ -11,36 +11,47 @@ class TabViewModel(private val dataRepository: DataRepository): ViewModel() {
 
     // variables
     var index : MutableLiveData<Int> = MutableLiveData()
-    var location : MutableLiveData<String> = MutableLiveData()
+    //var location : MutableLiveData<String> = MutableLiveData()
 
     // for Kari. Observe this variable
-    var photo : MutableLiveData<Bitmap> = MutableLiveData()
+    //var photo : MutableLiveData<Bitmap> = MutableLiveData()
+
+    var claim : MutableLiveData<Claim> = MutableLiveData()
+
+    // unsure of how to
+    var allClaims : MutableLiveData<MutableList<Claim>> = MutableLiveData()
 
 
 
     // THE MISTAKE: I created a new MutableLiveData object instead of just updating the value
     // BEWARE
-    fun setIndex(tab: Int) {
+    fun setTab(tab: Int, maxTab : Int) {
         Log.d("Fetch", "setIndex($tab)")
 
         // dataRepository.getNumberOfClaims()
-        val tabs = 5
-        val ind = tabs - tab - 1
-        index.value = ind
+        //val tabs = 5
+        val id = maxTab - tab - 1
 
-        // Updating location
-        location.value = getLocation(ind)
+        claim.value = dataRepository.getClaimDataFromSharedPrefrences(id)
+        index.value = id
+
+        /*// Updating location
+        location.value = getLocation(id)
 
         // for Kari
         // Updating photo
-        photo.value = getPhoto(ind)
+        photo.value = getPhoto(id)*/
     }
 
-    private fun getLocation(id : Int) : String {
+    fun addClaim() {
+        // use notifyDataSetChanged
+    }
+
+    /*private fun getLocation(id : Int) : String {
         val claim = dataRepository.getClaimDataFromSharedPrefrences(id)
         return claim.claimLocation
     }
 
-    private fun getPhoto(id : Int) : Bitmap? = null
+    private fun getPhoto(id : Int) : Bitmap? = null*/
 
 }

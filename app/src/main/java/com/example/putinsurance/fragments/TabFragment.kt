@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SwitchCompat
+import androidx.core.view.size
 import com.google.android.material.tabs.TabLayout
 import androidx.viewpager2.widget.ViewPager2
 import androidx.fragment.app.Fragment
@@ -64,7 +65,9 @@ class TabFragment : Fragment() {
         viewPager2.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
-                tabViewModel.setIndex(position)
+                Log.d("tabCount", "${tabs.tabCount}")
+                Log.d("tabCount", "$position")
+                tabViewModel.setTab(position, tabs.tabCount) // not sure if best practice
             }
         })
 
