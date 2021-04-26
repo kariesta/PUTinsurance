@@ -19,9 +19,11 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import java.lang.NumberFormatException
 
 class MapsFragment : Fragment() {
 
+    // Coordinates from Oslo
     private var coordinates : String = "59.91-10.75"
 
     private val callback = OnMapReadyCallback { googleMap ->
@@ -61,9 +63,9 @@ class MapsFragment : Fragment() {
 
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
 
-        tabViewModel.index.observe(viewLifecycleOwner, Observer<Int> {
+        tabViewModel.location.observe(viewLifecycleOwner, Observer<String> {
             Log.d("Switch", "Observed change in index$it")
-            coordinates = "${it*10}-${it*15}"
+            coordinates = it //"${it*10}-${it*15}"
             mapFragment?.getMapAsync(callback)
         })
 
@@ -73,14 +75,21 @@ class MapsFragment : Fragment() {
     private fun setNewMarker(location : String, googleMap: GoogleMap) {
         // Splitting a string with same form as coordinates in shared preferences
         val coordinates = location.split("-")
-        val lat = coordinates[0].toDouble()
-        val lng = coordinates[1].toDouble()
 
-        // Add a marker in Oslo and move the camera
-        val pos = LatLng(lat, lng)
-        googleMap.addMarker(MarkerOptions().position(pos).title("Marker in $location"))
-        // Zoom in at a specific level
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pos, 5F))
+        try {
 
+            val lat = coordinates[0].toDouble()
+            val lng = coordinates[1].toDouble()
+
+            // Add a marker in Oslo and move the camera
+            val pos = LatLng(lat, lng)
+            googleMap.addMarker(MarkerOptions().position(pos).title("Marker in $location"))
+
+            // Zoom in at a specific level
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pos, 5F))
+
+        } catch (e : NumberFormatException) {
+            Log.d("Fetch", "Coordinates not valid")
+        }
     }
 }

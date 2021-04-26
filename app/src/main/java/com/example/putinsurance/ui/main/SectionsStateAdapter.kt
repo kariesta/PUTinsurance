@@ -19,6 +19,7 @@ class SectionsStateAdapter(fragment : Fragment) :
         return TabItemFragment.newInstance(position + 1)
     }
 
+    //TODO: update based on number of claims
     override fun getItemCount(): Int {
         // Show 5 total pages.
         return 5

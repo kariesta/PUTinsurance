@@ -187,7 +187,7 @@ class DataRepository private constructor(private val context: Context, private  
                 ""
             ),
             preferences.getString("claimPhoto$id", ""),
-            preferences.getString("claimLocation$id", ""),
+            preferences.getString("claimLocation$id", "-"),
             preferences.getString("claimStatus$id", "")
         )
     }

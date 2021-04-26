@@ -1,5 +1,6 @@
 package com.example.putinsurance.fragments
 
+import android.graphics.Bitmap
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import android.util.Log
@@ -33,16 +34,20 @@ class PhotoFragment : Fragment() {
         tabViewModel = ViewModelProvider(requireActivity(), factory).get(TabViewModel::class.java)
 
         // I don't understand why this is called when we go back, even when map is showed?
-        // is it because i detach twice?
-        tabViewModel.index.observe(viewLifecycleOwner, Observer<Int> {
-            Log.d("Switch", "setting new image resource")
-            when (it) {
+        // is it because i detach twice? Not detached twice anymore. Still called.
+        tabViewModel.photo.observe(viewLifecycleOwner, Observer<Bitmap> {
+            Log.d("Fetch", "Setting new image resource")
+
+            // TODO
+            photo_accident.setImageBitmap(it)
+
+            /*when (it) {
                 0 -> photo_accident.setImageResource(R.drawable.car_crash_0)
                 1 -> photo_accident.setImageResource(R.drawable.ic_baseline_add_24)
                 2 -> photo_accident.setImageResource(R.drawable.ic_launcher_foreground)
                 3 -> photo_accident.setImageResource(R.drawable.car_crash_0)
                 4 -> photo_accident.setImageResource(R.drawable.car_crash_0)
-            }
+            }*/
         })
     }
 
