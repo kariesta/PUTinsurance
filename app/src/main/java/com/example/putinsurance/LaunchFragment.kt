@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import com.example.putinsurance.data.DataRepository
+import com.example.putinsurance.utils.InjectorUtils
 
 /**
  * An example full-screen fragment that shows and hides the system UI (i.e.
