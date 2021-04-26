@@ -5,42 +5,32 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.net.ConnectivityManager
-import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
-import android.util.Base64.DEFAULT
-import android.util.Base64.encodeToString
 import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.FileProvider
-import androidx.fragment.app.commit
 import androidx.navigation.Navigation
 import com.example.putinsurance.data.Claim
 import com.example.putinsurance.data.DataRepository
 import com.example.putinsurance.ui.main.SectionsStateAdapter
-import java.io.ByteArrayOutputStream
-import kotlinx.android.synthetic.main.fragment_tab.*
 import java.io.File
 import java.io.IOException
 import java.math.BigInteger
 import java.security.MessageDigest
-import java.security.Permission
 import java.text.SimpleDateFormat
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
-    private val ip = "10.0.2.2"
-    private val port = "8080"
     val MAX_CLAIMS = 5
     private val REQUEST_IMAGE_CAPTURE = 1
-    private lateinit var sectionsStateAdapter: SectionsStateAdapter
     private var currentPhotoPath: String  = ""
     private lateinit var sharedPref: SharedPreferences
     private var currentPhotoFilename: String  = ""
@@ -64,6 +54,12 @@ class MainActivity : AppCompatActivity() {
         sectionsStateAdapter = SectionsStateAdapter(this)
         Log.d("TABS","etter sectionStateAdapterkall lerlori")*/
 
+    }
+
+
+    override fun onDestroy() {
+        unregisterReceiver(receiver)
+        super.onDestroy()
     }
 
     /*override fun onStop() {
