@@ -19,7 +19,6 @@ import androidx.core.content.FileProvider
 import androidx.navigation.Navigation
 import com.example.putinsurance.data.Claim
 import com.example.putinsurance.data.DataRepository
-import com.example.putinsurance.ui.main.SectionsStateAdapter
 import java.io.File
 import java.io.IOException
 import java.math.BigInteger
@@ -49,11 +48,6 @@ class MainActivity : AppCompatActivity() {
         val filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)//ConnectivityManager.CONNECTIVITY_ACTION)
         registerReceiver(receiver, filter)
         Log.d("networked", "its listening!")
-
-        /*// Adapter
-        sectionsStateAdapter = SectionsStateAdapter(this)
-        Log.d("TABS","etter sectionStateAdapterkall lerlori")*/
-
     }
 
 
@@ -227,7 +221,6 @@ class MainActivity : AppCompatActivity() {
 
         // If email and password are in shared pref, nullpointerexception is not thrown
         dataRepository.userValidation(emailText, passwordHash, loginCallBack)
-
     }
 
 
@@ -354,7 +347,7 @@ class MainActivity : AppCompatActivity() {
         //dataRepository.insertClaimIntoSharedPreferences(numbOfClaims, descString, longString, latString, photoName,sharedPref)
         //dataRepository.sendClaimToServer(numbOfClaims, descString, longString, latString, photoName)
         Toast.makeText(this, "New claim added", Toast.LENGTH_SHORT).show()
-        Navigation.findNavController(view).navigate(R.id.action_claimFormFragment_to_tabFragment)
+        Navigation.findNavController(view).popBackStack()
     }
     /** Claim form functions end*/
 

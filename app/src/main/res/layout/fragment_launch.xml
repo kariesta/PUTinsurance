@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:theme="@style/ThemeOverlay.PUTinsurance.FullscreenContainer"
+        android:background="?attr/fullscreenBackgroundColor"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".LaunchFragment">
+
+    <!-- The primary full-screen view. This can be replaced with whatever view
+         is needed to present your content, e.g. VideoView, SurfaceView,
+         TextureView, etc. -->
+    <TextView
+            android:id="@+id/fullscreen_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:keepScreenOn="true"
+            android:textStyle="bold"
+            android:textSize="50sp"
+            android:textColor="@color/colorPrimary"
+            android:gravity="center"
+            android:text="@string/dummy_content"
+            android:background="#03A9F4" />
+</FrameLayout>

@@ -40,7 +40,7 @@ class DataRepository private constructor(private val context: Context, private  
     fun userValidation(
         email: String,
         passHash: String,
-        callback: (Boolean,String) -> Unit
+        callback: (Boolean,String) -> Any
     ) {
         try {
             validateUserBySharedPreferences(email, passHash,callback)
@@ -61,7 +61,7 @@ class DataRepository private constructor(private val context: Context, private  
     private fun validateUserBySharedPreferences(
         email: String,
         passHash: String,
-        callback: (Boolean,String) -> Unit
+        callback: (Boolean,String) -> Any
     ) {
 
         val em = preferences.getString("email", null)
@@ -78,7 +78,7 @@ class DataRepository private constructor(private val context: Context, private  
 
     private fun validateUserByServer(
         email: String,
-        passHash: String, callback: (Boolean, String) -> Unit
+        passHash: String, callback: (Boolean, String) -> Any
     ) {
 
         // url
@@ -87,7 +87,7 @@ class DataRepository private constructor(private val context: Context, private  
         sendLoginRequest(url, callback)
     }
 
-    private fun sendLoginRequest(url: String, callback: (Boolean, String) -> Unit) {
+    private fun sendLoginRequest(url: String, callback: (Boolean, String) -> Any) {
         // Request queue
         // TODO: Check if we can only have one queue per activity
         //queue = Volley.newRequestQueue(context)

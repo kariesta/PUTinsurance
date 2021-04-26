@@ -44,4 +44,5 @@
     <string name="newPasswordContent" />
     <string name="changepasswordButton">change</string>
     <string name="settingsIconDescription">settings-button with gear symbol</string>
+    <string name="dummy_content">Carma</string>
 </resources>
