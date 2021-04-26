@@ -57,7 +57,7 @@ class MapsFragment : Fragment() {
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
 
         tabViewModel.index.observe(viewLifecycleOwner, Observer<Int> {
-            Log.d("MapFragment - tab", "Observed change in index$it")
+            Log.d("Switch", "Observed change in index$it")
             coordinates = "${it*10}-${it*15}"
             mapFragment?.getMapAsync(callback)
         })
