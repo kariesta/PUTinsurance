@@ -14,6 +14,7 @@ import com.example.putinsurance.MainActivity
 import com.example.putinsurance.R
 import com.example.putinsurance.viewmodels.TabViewModel
 import com.example.putinsurance.ui.main.SectionsStateAdapter
+import com.example.putinsurance.utils.InjectorUtils
 import com.google.android.material.tabs.TabLayoutMediator
 
 class TabFragment : Fragment() {
@@ -34,7 +35,9 @@ class TabFragment : Fragment() {
         // ViewModel
         //val viewmodel : TabViewModel = ViewModelProviders.of()
 
-        tabViewModel = ViewModelProvider(this.requireActivity()).get(TabViewModel::class.java)
+        // TODO: check what context should be used
+        val factory = InjectorUtils.provideTabViewModelFactory(this.requireActivity())
+        tabViewModel = ViewModelProvider(this.requireActivity(), factory).get(TabViewModel::class.java)
 
         // Adapter
         val sectionsStateAdapter = SectionsStateAdapter(this)

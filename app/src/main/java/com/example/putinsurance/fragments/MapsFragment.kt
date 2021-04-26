@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.putinsurance.R
+import com.example.putinsurance.utils.InjectorUtils
 import com.example.putinsurance.viewmodels.TabViewModel
 
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -55,7 +56,9 @@ class MapsFragment : Fragment() {
 
         // IMPORTANT!! The scope of the viewmodel MUST be the same in the different fragments,
         // or else you will get a different viewmodel
-        tabViewModel = ViewModelProvider(this.requireActivity()).get(TabViewModel::class.java)
+        val factory = InjectorUtils.provideTabViewModelFactory(this.requireActivity())
+        tabViewModel = ViewModelProvider(this.requireActivity(), factory).get(TabViewModel::class.java)
+
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
 
         tabViewModel.index.observe(viewLifecycleOwner, Observer<Int> {

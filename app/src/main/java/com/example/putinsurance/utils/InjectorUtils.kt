@@ -3,6 +3,7 @@ package com.example.putinsurance.utils
 import android.content.Context
 import com.example.putinsurance.data.DataRepository
 import com.example.putinsurance.viewmodels.TabItemViewModelFactory
+import com.example.putinsurance.viewmodels.TabViewModelFactory
 
 object InjectorUtils {
 
@@ -14,4 +15,7 @@ object InjectorUtils {
 
     fun provideTabItemViewModelFactory(context: Context) =
         TabItemViewModelFactory(getDataRepository(context))
+
+    fun provideTabViewModelFactory(context: Context) =
+        TabViewModelFactory(getDataRepository(context))
 }

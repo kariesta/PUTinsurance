@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import com.example.putinsurance.R
+import com.example.putinsurance.utils.InjectorUtils
 import com.example.putinsurance.viewmodels.TabViewModel
 import kotlinx.android.synthetic.main.photo_fragment.*
 
@@ -28,7 +29,8 @@ class PhotoFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        tabViewModel = ViewModelProvider(requireActivity()).get(TabViewModel::class.java)
+        val factory = InjectorUtils.provideTabViewModelFactory(requireActivity())
+        tabViewModel = ViewModelProvider(requireActivity(), factory).get(TabViewModel::class.java)
 
         // I don't understand why this is called when we go back, even when map is showed?
         // is it because i detach twice?

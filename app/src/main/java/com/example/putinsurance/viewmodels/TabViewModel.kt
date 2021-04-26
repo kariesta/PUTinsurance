@@ -3,9 +3,10 @@ package com.example.putinsurance.viewmodels
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.putinsurance.data.DataRepository
 
-// private val dataRepository: DataRepository
-class TabViewModel: ViewModel() {
+
+class TabViewModel(private val dataRepository: DataRepository): ViewModel() {
 
     //variables
     var index : MutableLiveData<Int> = MutableLiveData()
