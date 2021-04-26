@@ -8,7 +8,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.example.putinsurance.InjectorUtils
+import com.example.putinsurance.utils.InjectorUtils
 import com.example.putinsurance.R
 
 

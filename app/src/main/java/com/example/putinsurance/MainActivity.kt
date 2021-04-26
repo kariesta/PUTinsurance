@@ -20,6 +20,7 @@ import com.example.putinsurance.data.Claim
 import com.example.putinsurance.data.DataRepository
 import com.example.putinsurance.fragments.MapsFragment
 import com.example.putinsurance.fragments.PhotoFragment
+import com.example.putinsurance.utils.InjectorUtils
 import java.io.File
 import java.io.IOException
 import java.math.BigInteger
