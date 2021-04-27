@@ -334,6 +334,7 @@ class MainActivity : AppCompatActivity() {
         val imageString: String = android.util.Base64.encodeToString(imageBytes,android.util.Base64.URL_SAFE)
 
         //Legger inn nye verdier
+        Log.d("ADD_CLAIM_ERROR?", "Now putting in addition of  numclam$numbOfClaims desc$descString pname$photoName lat$latString long$longString imString${if(imageString.length>6) imageString.substring(0,5) else "nothing"}")
         dataRepository.addClaim(numbOfClaims,Claim(numbOfClaims.toString(), descString, photoName,"$latString-$longString","0"),imageString)
         //dataRepository.insertClaimIntoSharedPreferences(numbOfClaims, descString, longString, latString, photoName,sharedPref)
         //dataRepository.sendClaimToServer(numbOfClaims, descString, longString, latString, photoName)

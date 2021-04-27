@@ -57,12 +57,12 @@ class TabViewModel(private val dataRepository: DataRepository): ViewModel() {
     }*/
 
     private fun getPhoto(id: Int) : Bitmap? {
-        var image = dataRepository.getClaimImageFromPreferences(id)
+        /*var image = dataRepository.getClaimImageFromPreferences(id)
         if (image == null){
             dataRepository.getClaimImageFromServer(id)
             image = dataRepository.getClaimImageFromPreferences(id)
-        }
-        return image
+        }*/
+        return dataRepository.getClaimImageFromPreferences(id)
     }
 
 }

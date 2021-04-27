@@ -241,6 +241,7 @@ class DataRepository private constructor(private val context: Context, private  
             sendMyClaimsRequest(url)
         } else if (essensial) {
             offlineRequests.add{
+                Log.d("OFFLINEACT", "NOW getAllClaimsFromServer $url")
                 sendMyClaimsRequest(url)
             }
         }
@@ -266,14 +267,33 @@ class DataRepository private constructor(private val context: Context, private  
             val photoname = preferences.getString("claimPhoto$claimId",null)
             val pId = getUserId()
             val imageString = preferences.getString(photoname,null)
+            val claimToUpdate = getClaimDataFromSharedPrefrences(claimId)
             if (pId!=null && imageString!=null){
-                addImageToServer(getClaimDataFromSharedPrefrences(claimId),pId,imageString)
+                if (isConnected) {
+                    Log.d("UPDATE_IMAGE","now adding image for $claimId with strings ${imageString.length}")
+                    addImageToServer(claimToUpdate,pId,imageString)
+                } else {
+                    Log.d("UPDATE_IMAGE","LATER adding image for $claimId with strings ${imageString.length}")
+                    offlineRequests.add {
+                        Log.d("OFFLINEACT", "NOW addImageToServer$pId")
+                        addImageToServer(claimToUpdate,pId,imageString)
+                    }
+                }
             }
             else{
                 Log.d("UPDATE_IMAGE","not done because of pid:$pId or imageString:$imageString")
             }
         } else {
-            getClaimImageFromServer(claimId)
+            if (isConnected) {
+                Log.d("UPDATE_IMAGE","now fetching  image for $claimId from server")
+                getClaimImageFromServer(claimId)
+            } else {
+                Log.d("UPDATE_IMAGE","LATER fetching  image for $claimId from server")
+                offlineRequests.add {
+                    Log.d("OFFLINEACT", "NOW getClaimImageFromServer$claimId")
+                    getClaimImageFromServer(claimId)
+                }
+            }
         }
     }
 
@@ -285,6 +305,7 @@ class DataRepository private constructor(private val context: Context, private  
                 sendGetImageRequest(url,photoname)
             } else {
                 offlineRequests.add {
+                    Log.d("OFFLINEACT","NOW sendGetImageRequest $url  $photoname")
                     sendGetImageRequest(url,photoname)
                 }
             }
@@ -366,6 +387,7 @@ class DataRepository private constructor(private val context: Context, private  
         claim: Claim,
         imageString: String?
     ){
+        Log.d("ADD_CLAIM_ERROR?", "Now putting in said imstring for numclam$numbOfClaims clam$claim with imString${if(imageString!=null && imageString.length>6) imageString.substring(0,5) else "nothing"}")
         preferences.edit().apply(){ putString(claim.claimPhoto,imageString);commit()}
         insertClaimIntoSharedPreferences(numbOfClaims, claim)
         val personID = preferences.getString("personID", "na")
@@ -374,7 +396,10 @@ class DataRepository private constructor(private val context: Context, private  
             addClaimToServer(claim, personID)
         } else {
             Log.d("HANDLE_OFFLINE", "make request later!")
-            offlineRequests.add { addClaimToServer(claim, personID) }
+            offlineRequests.add {
+                Log.d("OFFLINEACT","NOW addClaimToServer $claim  $personID")
+                addClaimToServer(claim, personID)
+            }
         }
     }
 
@@ -382,6 +407,7 @@ class DataRepository private constructor(private val context: Context, private  
         numbOfClaims: Int,
         claim: Claim
     ){
+        Log.d("ADD_CLAIM_ERROR?", "Now putting numclam$numbOfClaims clam$claim in sharedPref")
         preferences.edit().apply{
             putInt("numberOfClaims", numbOfClaims + 1)
             putString("claimID$numbOfClaims", numbOfClaims.toString())
@@ -391,6 +417,8 @@ class DataRepository private constructor(private val context: Context, private  
             putString("claimLocation$numbOfClaims", claim.claimLocation)
             commit()
         }
+        Log.d("ADD_CLAIM_ERROR?", "End putting to shared pref")
+
     }
 
     private fun addClaimToServer(claim: Claim, personID: String){
@@ -398,6 +426,7 @@ class DataRepository private constructor(private val context: Context, private  
         //public String postInsertNewClaim(@RequestParam String userId, @RequestParam String indexUpdateClaim, @RequestParam String newClaimDes, @RequestParam String newClaimPho, @RequestParam String newClaimLoc, @RequestParam String newClaimSta) {
         val parameters = "userId=$personID&indexUpdateClaim=${claim.claimID}&newClaimDes=${claim.claimDes}&newClaimPho=${claim.claimPhoto}&newClaimLoc=${claim.claimLocation}&newClaimSta=$status"
         val url = "http://$ip:$port/postInsertNewClaim?$parameters"
+        Log.d("ADD_CLAIM_ERROR?", "sending to server with $url")
         val stringRequest = StringRequest(
             Request.Method.POST, url,
             { _ ->
@@ -422,6 +451,7 @@ class DataRepository private constructor(private val context: Context, private  
         queue = Volley.newRequestQueue(context)
         val parameters = "userId=$personID&claimId=${claim.claimID}&fileName=${claim.claimPhoto}&imageStringBase64=${imageString}"
         val url = "http://$ip:$port/postMethodUploadPhoto?$parameters"
+        Log.d("UPDATE_IMAGE??", "now sending to $url")
         val stringRequest = StringRequest(
             Request.Method.POST, url,
             { _ ->
@@ -454,9 +484,15 @@ class DataRepository private constructor(private val context: Context, private  
             }
         } else {
             Log.d("HANDLE_OFFLINE", "make request later!")
-            offlineRequests.add { updateClaimInServer(claim, status, personID) }
+            offlineRequests.add {
+                Log.d("OFFLINEACT","NOW updateClaimInServer $claim $status $personID")
+                updateClaimInServer(claim, status, personID)
+            }
             if (imageString != null){
-                offlineRequests.add { addImageToServer(claim, personID, imageString) }
+                offlineRequests.add {
+                    Log.d("OFFLINEACT","NOW addImageToServer $claim  $personID $imageString")
+                    addImageToServer(claim, personID, imageString)
+                }
             }
         }
     }
@@ -497,6 +533,7 @@ class DataRepository private constructor(private val context: Context, private  
 
     fun doWaitingRequests(){
         Log.d("HANDLE_OFFLINE", "make offlined requests now, there are ${offlineRequests.size} ")
+        Log.d("HANDLE_OFFLINE", "${offlineRequests.toString()} ")
         while (isConnected && offlineRequests.isNotEmpty()){
             offlineRequests.removeAt(0)()
         }
