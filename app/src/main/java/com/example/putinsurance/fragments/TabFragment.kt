@@ -9,7 +9,6 @@ import androidx.appcompat.widget.SwitchCompat
 import com.google.android.material.tabs.TabLayout
 import androidx.viewpager2.widget.ViewPager2
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.putinsurance.MainActivity
 import com.example.putinsurance.R
@@ -66,14 +65,11 @@ class TabFragment : Fragment() {
                 super.onPageSelected(position)
                 Log.d("tabCount", "${tabs.tabCount}")
                 Log.d("tabCount", "$position")
-                tabViewModel.setTab(position, tabs.tabCount) // not sure if best practice
+                tabViewModel.setTab(position) // not sure if best practice
             }
         })
 
-        // does not work correctly inside here.
-        // Need to somehow get information of when it has been
-        // thought: should maybe just add all the markers at once?
-        // then just zoom in to correct one
+
         val mySwitch : SwitchCompat = view.findViewById(R.id.mySwitch)
 
 

@@ -1,9 +1,7 @@
 package com.example.putinsurance.ui.main
 
 import android.util.Log
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import com.example.putinsurance.data.Claim
 import com.example.putinsurance.data.DataRepository
@@ -15,7 +13,7 @@ class StateViewModel(private val dataRepository: DataRepository) : ViewModel() {
         "Hello world from section: $it"
     }
 */
-    private val _loc = MutableLiveData<String>()
+   /* private val _loc = MutableLiveData<String>()
     val locText: LiveData<String> = _loc
 
     private val _desc = MutableLiveData<String>()
@@ -25,17 +23,23 @@ class StateViewModel(private val dataRepository: DataRepository) : ViewModel() {
     val idText: LiveData<String> = Transformations.map(_id) {
         "ID: $it"
     }
+*/
+    val claim = MutableLiveData<Claim>()
 
 
+    // According to this: Shared preferences is thread safe, but not process safe
     fun setIndex(index: Int) {
         _index.value = index
+        Log.d("TabItem", "setIndex($index)")
         val numOfClaims = dataRepository.getNumberOfClaims()
-        Log.d("numOfClaims", "$numOfClaims")
-        Log.d("numOfClaims - $index", "${numOfClaims - index}")
-        val claim = dataRepository.getClaimDataFromSharedPrefrences(numOfClaims - index)
-        Log.d("PICK_TAB", claim.toString())
-        _loc.value = claim.claimLocation
-        _desc.value = claim.claimDes
-        _id.value = claim.claimID
+        val claimID = numOfClaims - index
+        claim.value = dataRepository.getClaimDataFromSharedPrefrences(claimID)
+
+    }
+
+    fun updateClaim(c: Claim, imageString : String) {
+        //if (c != claim.value || imageString =! ..) // for not updating unnecessary
+        dataRepository.updateClaim(c, imageString)
+        //this.claim.value = claim
     }
 }

@@ -41,11 +41,11 @@ class PhotoFragment : Fragment() {
 
         // When just photo is observed, it doesn't trigger when there is no photo (as the string remains 0)
         // Maybe it's better to observe only photo?
-        tabViewModel.claim.observe(viewLifecycleOwner, Observer<Claim> {
+        tabViewModel.photo.observe(viewLifecycleOwner, Observer<String> {
             Log.d("Fetch", "Setting new image resource")
 
             // TODO
-            photo_accident.setImageBitmap(it.claimPhoto.toBitmap())
+            photo_accident.setImageBitmap(it.toBitmap())
 
             /*when (it) {
                 0 -> photo_accident.setImageResource(R.drawable.car_crash_0)

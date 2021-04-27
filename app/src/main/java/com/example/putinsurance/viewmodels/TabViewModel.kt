@@ -1,5 +1,6 @@
 package com.example.putinsurance.viewmodels
 
+import android.graphics.Bitmap
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -10,50 +11,53 @@ import com.example.putinsurance.data.DataRepository
 class TabViewModel(private val dataRepository: DataRepository): ViewModel() {
 
     // variables
-    var index : MutableLiveData<Int> = MutableLiveData()
-    //var location : MutableLiveData<String> = MutableLiveData()
+    //var index : MutableLiveData<Int> = MutableLiveData()
 
     // for Kari. Observe this variable
-    //var photo : MutableLiveData<Bitmap> = MutableLiveData()
+    var photo : MutableLiveData<String> = MutableLiveData()
 
-    var claim : MutableLiveData<Claim> = MutableLiveData()
+    //var claim : MutableLiveData<Claim> = MutableLiveData()
 
-    // unsure of how to
-    var allClaims : MutableLiveData<MutableList<Claim>> = MutableLiveData()
+    var location = MutableLiveData<String>()
 
     fun getNumOfTabs() = dataRepository.getNumberOfClaims()
 
-
-
-    // THE MISTAKE: I created a new MutableLiveData object instead of just updating the value
-    // BEWARE
-    fun setTab(tab: Int, maxTab : Int) {
-        Log.d("Fetch", "setIndex($tab)")
+    fun setTab(position: Int) {
+        Log.d("Fetch", "setIndex($position)")
 
         // dataRepository.getNumberOfClaims()
         //val tabs = 5
-        val id = maxTab - tab - 1
+        val id = getNumOfTabs() - position - 1
 
-        claim.value = dataRepository.getClaimDataFromSharedPrefrences(id)
-        index.value = id
+        val claim = dataRepository.getClaimDataFromSharedPrefrences(id)
 
-        /*// Updating location
-        location.value = getLocation(id)
+        //claim.value = dataRepository.getClaimDataFromSharedPrefrences(id)
+        //index.value = id
+
+        // Updating location
+        //location.value = claim.claimLocation
 
         // for Kari
         // Updating photo
-        photo.value = getPhoto(id)*/
+        //photo.value = claim.claimPhoto
+
+        notifyChanged(claim)
     }
 
-    fun addClaim() {
-        // use notifyDataSetChanged
+    fun updateClaim(claim: Claim, imageString : String) {
+        dataRepository.updateClaim(claim, imageString)
+        notifyChanged(claim)
     }
 
-    /*private fun getLocation(id : Int) : String {
-        val claim = dataRepository.getClaimDataFromSharedPrefrences(id)
-        return claim.claimLocation
+    fun notifyChanged(claim: Claim) {
+        if (claim.claimLocation != location.value)
+            location.value = claim.claimLocation
+
+        if (claim.claimPhoto != photo.value)
+            photo.value = claim.claimLocation
     }
 
-    private fun getPhoto(id : Int) : Bitmap? = null*/
+
+    /*private fun getPhoto(id : Int) : Bitmap? = null*/
 
 }

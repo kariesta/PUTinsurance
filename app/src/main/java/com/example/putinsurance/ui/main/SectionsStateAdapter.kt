@@ -21,7 +21,6 @@ class SectionsStateAdapter(private val numOfTabs: Int, fragment : Fragment) :
 
     //TODO: update based on number of claims
     override fun getItemCount(): Int {
-        // Show 5 total pages.
         return numOfTabs
     }
 }

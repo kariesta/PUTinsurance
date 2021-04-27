@@ -64,9 +64,9 @@ class MapsFragment : Fragment() {
 
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
 
-        tabViewModel.claim.observe(viewLifecycleOwner, Observer<Claim> {
+        tabViewModel.location.observe(viewLifecycleOwner, Observer<String> {
             Log.d("Switch", "Observed change in index$it")
-            coordinates = it.claimLocation //"${it*10}-${it*15}"
+            coordinates = it //"${it*10}-${it*15}"
             mapFragment?.getMapAsync(callback)
         })
 
@@ -75,6 +75,7 @@ class MapsFragment : Fragment() {
 
     private fun setNewMarker(location : String, googleMap: GoogleMap) {
         // Splitting a string with same form as coordinates in shared preferences
+        Log.d("Map", "Setting new marker")
         val coordinates = location.split("-")
 
         try {

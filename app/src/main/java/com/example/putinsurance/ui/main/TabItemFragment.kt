@@ -1,15 +1,21 @@
 package com.example.putinsurance.ui.main
 
 import android.os.Bundle
+import android.text.InputType
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import android.widget.EditText
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.putinsurance.utils.InjectorUtils
 import com.example.putinsurance.R
+import com.example.putinsurance.data.Claim
+import com.example.putinsurance.viewmodels.TabViewModel
+import kotlinx.android.synthetic.main.fragment_tab_item.*
 
 
 /**
@@ -18,14 +24,22 @@ import com.example.putinsurance.R
 class TabItemFragment : Fragment() {
 
     private lateinit var stateViewModel: StateViewModel
+    private lateinit var tabViewModel : TabViewModel
+    private lateinit var claim: Claim
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val factory = InjectorUtils.provideTabItemViewModelFactory(this.requireContext())
-        stateViewModel = ViewModelProvider(this,factory).get(StateViewModel::class.java).apply {
+        val factoryState = InjectorUtils.provideTabItemViewModelFactory(this.requireContext())
+        stateViewModel = ViewModelProvider(this,factoryState).get(StateViewModel::class.java).apply {
             setIndex(arguments?.getInt(ARG_SECTION_NUMBER) ?: 1)
         }
+
+        Log.d("TabItem", "Creating fragment ${arguments?.getInt(ARG_SECTION_NUMBER) ?: 1}")
+
+        // Not sure if good to do...
+        val factoryTab = InjectorUtils.provideTabViewModelFactory(this.requireActivity())
+        tabViewModel = ViewModelProvider(this.requireActivity(), factoryTab).get(TabViewModel::class.java)
     }
 
     override fun onCreateView(
@@ -34,22 +48,61 @@ class TabItemFragment : Fragment() {
     ): View? {
         val root = inflater.inflate(R.layout.fragment_tab_item, container, false)
 
-        val claimLocView: TextView = root.findViewById(R.id.claimLocField)
-        val claimDesView: TextView = root.findViewById(R.id.claimDesField)
-        val claimIDView: TextView = root.findViewById(R.id.claimIdField)
+        stateViewModel.claim.observe(viewLifecycleOwner, Observer<Claim> {
+            claim = it
+            claimIdField.text = it.claimID
+            claimLocField.setText(it.claimLocation)
+            claimDesField.setText(it.claimDes)
+        })
 
-
-        stateViewModel.locText.observe(this.viewLifecycleOwner, Observer<String> {
-            claimLocView.text = it
-        })
-        stateViewModel.descText.observe(this.viewLifecycleOwner, Observer<String> {
-            claimDesView.text = it
-        })
-        stateViewModel.idText.observe(this.viewLifecycleOwner, Observer<String> {
-            claimIDView.text = it
-        })
         return root
     }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        editClaimButton.setOnClickListener {
+
+            if (editClaimButton.text.toString() == "Save") {
+
+                claim.claimLocation = claimLocField.text.toString()
+                claim.claimDes = claimDesField.text.toString()
+
+                //stateViewModel.updateClaim(claim, "")
+                //tabViewModel.notifyChanged(claim) // pretty sure this is bad practice...
+                tabViewModel.updateClaim(claim, "") // not sure if using this viewmodel is okay
+
+
+                setNotEditable(claimLocField)
+                setNotEditable(claimDesField)
+                editClaimButton.text = "Edit"
+
+            } else {
+
+                setEditable(claimLocField, InputType.TYPE_NUMBER_FLAG_DECIMAL)
+                setEditable(claimDesField, InputType.TYPE_CLASS_TEXT)
+                editClaimButton.text = "Save"
+            }
+
+        }
+    }
+
+    private fun setEditable(view: EditText, input: Int) {
+        view.apply {
+            inputType = input
+            isEnabled = true
+            setTextColor(ContextCompat.getColor(context, R.color.colorError))
+        }
+    }
+
+    private fun setNotEditable(view: EditText) {
+        view.apply {
+            inputType = InputType.TYPE_NULL
+            isEnabled = false
+            setTextColor(ContextCompat.getColor(context, R.color.colorOnPrimary))
+        }
+    }
+
 
 
 
