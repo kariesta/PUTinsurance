@@ -65,6 +65,15 @@ class MainActivity : AppCompatActivity() {
         sharedPref.registerOnSharedPreferenceChangeListener(sharedPrefListner)
     }
 
+    override fun onResume() {
+        super.onResume()
+        Log.d("RESUME_UPDATE","UPDATERING")
+        if(dataRepository.getUserId()!=null){
+            Log.d("RESUME_UPDATE","UPDATERING1")
+            dataRepository.getAllClaimsFromServer(false)
+        }
+    }
+
 
     override fun onDestroy() {
         unregisterReceiver(receiver)
@@ -192,7 +201,7 @@ class MainActivity : AppCompatActivity() {
         val passwordHash = passwordToHashMD5(findViewById<TextView>(R.id.editTextTextPassword).text.toString())
         val loginCallBack =  { valid: Boolean,failReason: String ->
             if(valid){
-                dataRepository.getAllClaimsFromServer()
+                dataRepository.getAllClaimsFromServer(true)
                 Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_tabFragment)
             } else {
                 Toast.makeText(this,"login failed due to $failReason", Toast.LENGTH_SHORT).show()

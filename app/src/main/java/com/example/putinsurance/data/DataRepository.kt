@@ -232,14 +232,14 @@ class DataRepository private constructor(private val context: Context, private  
 
     //takes a call back method that adds the values to shared preference.
     //TODO WHAT IF NEW CLAIM IS MADE OR EDITED BEFORE FETCHED CLAIM FROM SERVER? A status number to compare versions? a conflicting claims activity?
-    fun getAllClaimsFromServer(){
+    fun getAllClaimsFromServer(essensial:Boolean){
         //send the request
         val personId = getUserId()
         val parameters =  "id=$personId"
         val url = "${urlBase}getMethodMyClaims?$parameters"
         if(isConnected){
             sendMyClaimsRequest(url)
-        } else {
+        } else if (essensial) {
             offlineRequests.add{
                 sendMyClaimsRequest(url)
             }
