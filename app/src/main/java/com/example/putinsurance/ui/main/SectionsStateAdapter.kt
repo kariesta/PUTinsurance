@@ -10,7 +10,7 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
  * one of the sections/tabs/pages.
  */
 // The activity that hosts the adapter
-class SectionsStateAdapter(fragment : Fragment) :
+class SectionsStateAdapter(private val numOfTabs: Int, fragment : Fragment) :
     FragmentStateAdapter(fragment) {
 
     override fun createFragment(position: Int): Fragment {
@@ -22,6 +22,6 @@ class SectionsStateAdapter(fragment : Fragment) :
     //TODO: update based on number of claims
     override fun getItemCount(): Int {
         // Show 5 total pages.
-        return 5
+        return numOfTabs
     }
 }

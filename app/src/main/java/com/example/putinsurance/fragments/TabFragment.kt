@@ -6,10 +6,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SwitchCompat
-import androidx.core.view.size
 import com.google.android.material.tabs.TabLayout
 import androidx.viewpager2.widget.ViewPager2
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.putinsurance.MainActivity
 import com.example.putinsurance.R
@@ -41,7 +41,9 @@ class TabFragment : Fragment() {
         tabViewModel = ViewModelProvider(this.requireActivity(), factory).get(TabViewModel::class.java)
 
         // Adapter
-        val sectionsStateAdapter = SectionsStateAdapter(this)
+        val numOfTabs = tabViewModel.getNumOfTabs()
+
+        val sectionsStateAdapter = SectionsStateAdapter(numOfTabs, this)
         val viewPager2 : ViewPager2 = view.findViewById(R.id.view_pager)
         viewPager2.adapter = sectionsStateAdapter
 
@@ -49,14 +51,11 @@ class TabFragment : Fragment() {
         // Got a findViewById(R.id.tabs) must not be null. Is there a race condition somewhere??
         val tabs: TabLayout = view.findViewById(R.id.tabs)
 
-        val tabTitles = listOf("4", "3", "2", "1", "0")
-
-        // Does not work with viewpager2:
-        //tabs.setupWithViewPager(viewPager2)
+        val tabTitles = List(numOfTabs){numOfTabs - 1 - it}
 
         // Need to do this instead:</LinearLayout>
         TabLayoutMediator(tabs, viewPager2) { tab, position ->
-            tab.text = tabTitles[position]
+            tab.text = tabTitles[position].toString()
             viewPager2.setCurrentItem(tab.position, true)
             Log.d("Map - tablayoutmediator", "position is $position")
         }.attach()
@@ -82,11 +81,9 @@ class TabFragment : Fragment() {
             if (isChecked) {
                 Log.d("TabFragment", "Showing map")
                 (activity as MainActivity).showMap(1)
-                //(activity as TabActivity).showMap(arguments?.getInt(ARG_SECTION_NUMBER))
             } else {
                 Log.d("TabFragment", "Showing photo")
                 (activity as MainActivity).showPhoto(1)
-                //(activity as TabActivity).showPhoto(arguments?.getInt(ARG_SECTION_NUMBER))
             }
         }
 
@@ -105,7 +102,6 @@ class TabFragment : Fragment() {
         // TODO: WHY???
         // for some reason this prevents the bug.
        if (mySwitch.isChecked) {
-           // I don't think this is ever called
             Log.d("Switch", "showMap")
             (activity as MainActivity).showMap(1)
         }

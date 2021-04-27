@@ -21,6 +21,8 @@ class TabViewModel(private val dataRepository: DataRepository): ViewModel() {
     // unsure of how to
     var allClaims : MutableLiveData<MutableList<Claim>> = MutableLiveData()
 
+    fun getNumOfTabs() = dataRepository.getNumberOfClaims()
+
 
 
     // THE MISTAKE: I created a new MutableLiveData object instead of just updating the value
