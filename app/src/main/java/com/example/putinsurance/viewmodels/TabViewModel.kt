@@ -1,5 +1,8 @@
 package com.example.putinsurance.viewmodels
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Base64
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -14,7 +17,7 @@ class TabViewModel(private val dataRepository: DataRepository): ViewModel() {
     //var location : MutableLiveData<String> = MutableLiveData()
 
     // for Kari. Observe this variable
-    //var photo : MutableLiveData<Bitmap> = MutableLiveData()
+    var photo : MutableLiveData<Bitmap> = MutableLiveData()
 
     var claim : MutableLiveData<Claim> = MutableLiveData()
 
@@ -36,11 +39,12 @@ class TabViewModel(private val dataRepository: DataRepository): ViewModel() {
         index.value = id
 
         /*// Updating location
-        location.value = getLocation(id)
+        location.value = getLocation(id)*/
 
         // for Kari
         // Updating photo
-        photo.value = getPhoto(id)*/
+        photo.value = getPhoto(id)
+        Log.d("SHOW_IMAGE", "photo.value now: ${photo.value}")
     }
 
     fun addClaim() {
@@ -50,8 +54,15 @@ class TabViewModel(private val dataRepository: DataRepository): ViewModel() {
     /*private fun getLocation(id : Int) : String {
         val claim = dataRepository.getClaimDataFromSharedPrefrences(id)
         return claim.claimLocation
-    }
+    }*/
 
-    private fun getPhoto(id : Int) : Bitmap? = null*/
+    private fun getPhoto(id: Int) : Bitmap? {
+        var image = dataRepository.getClaimImageFromPreferences(id)
+        if (image == null){
+            dataRepository.getClaimImageFromServer(id)
+            image = dataRepository.getClaimImageFromPreferences(id)
+        }
+        return image
+    }
 
 }

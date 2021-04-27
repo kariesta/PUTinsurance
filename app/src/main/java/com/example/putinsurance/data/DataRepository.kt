@@ -2,7 +2,9 @@ package com.example.putinsurance.data
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.os.Environment
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Base64
 import android.util.Log
 import com.android.volley.Request
 import com.android.volley.RequestQueue
@@ -10,7 +12,6 @@ import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import org.json.JSONObject
-import java.io.File
 
 
 class DataRepository private constructor(private val context: Context, private  val preferences: SharedPreferences ) {
@@ -32,6 +33,7 @@ class DataRepository private constructor(private val context: Context, private  
     private var queue : RequestQueue? =  Volley.newRequestQueue(context)
     private var offlineRequests: MutableList<() -> Unit> = mutableListOf()
     private val SENDDESPITELOGOUT = "SEND_DESPITE_LOGOUT"
+    private var sendImage = false //when photonames are changed either send to server, or request from server.
 
     //todo value to store weither we are synced with server.
     private var syncedWithServer = false
@@ -40,15 +42,15 @@ class DataRepository private constructor(private val context: Context, private  
     fun userValidation(
         email: String,
         passHash: String,
-        callback: (Boolean,String) -> Any
+        callback: (Boolean, String) -> Any
     ) {
         try {
-            validateUserBySharedPreferences(email, passHash,callback)
+            validateUserBySharedPreferences(email, passHash, callback)
         } catch (e: NullPointerException) {
             if(isConnected){
                 validateUserByServer(email, passHash, callback)
             }else{
-                callback(false,"offline device")
+                callback(false, "offline device")
             }
         }
     }
@@ -61,7 +63,7 @@ class DataRepository private constructor(private val context: Context, private  
     private fun validateUserBySharedPreferences(
         email: String,
         passHash: String,
-        callback: (Boolean,String) -> Any
+        callback: (Boolean, String) -> Any
     ) {
 
         val em = preferences.getString("email", null)
@@ -69,10 +71,10 @@ class DataRepository private constructor(private val context: Context, private  
 
         if (em!! == email && ph!! == passHash) {
             Log.d("logIn", "SHARED PREFS: SUCCESS. SEND TO NEXT ACTIVITY")
-            callback(true,"")
+            callback(true, "")
         } else {
             Log.d("logIn", "SHARED PREFS: FAIL. EMAIL/PASSWORD IS INCORRECT")
-            callback(false,"email/password is incorrect")
+            callback(false, "email/password is incorrect")
         }
     }
 
@@ -104,7 +106,10 @@ class DataRepository private constructor(private val context: Context, private  
                 // Updating shared preferences
                 insertIntoSharedPreferences(email, passHash, personID)
 
-                Log.d("logIn", "SERVER: SUCCESS. SEND TO NEXT ACTIVITY (email: $email and passHash: $passHash)")
+                Log.d(
+                    "logIn",
+                    "SERVER: SUCCESS. SEND TO NEXT ACTIVITY (email: $email and passHash: $passHash)"
+                )
                 callback(true, "")
                 //startActivity(context,Intent(context, TabActivity::class.java), null)
             },
@@ -148,7 +153,7 @@ class DataRepository private constructor(private val context: Context, private  
         }
     }
 
-    fun changePassword(password: String, passHash: String, callback: (Boolean,String) -> Unit) {
+    fun changePassword(password: String, passHash: String, callback: (Boolean, String) -> Unit) {
 
         if(isConnected){
             callback(false, "offline device")
@@ -168,8 +173,11 @@ class DataRepository private constructor(private val context: Context, private  
             { _ ->
                 // Updating shared preferences
                 insertIntoSharedPreferences(email, passHash, personID)
-                callback(true,"")
-                Log.d("changePass", "SERVER: SUCCESS. now (email: $email, password:$password and passHash: $passHash)")
+                callback(true, "")
+                Log.d(
+                    "changePass",
+                    "SERVER: SUCCESS. now (email: $email, password:$password and passHash: $passHash)"
+                )
             },
             {
                 callback(false, "failed to connect ot server")
@@ -183,7 +191,7 @@ class DataRepository private constructor(private val context: Context, private  
 
     //get number of claims
     fun getNumberOfClaims(): Int{
-        return preferences.getInt("numberOfClaims",0)
+        return preferences.getInt("numberOfClaims", 0)
     }
 
     //get each claimField by id/get all claimfields for one id
@@ -202,8 +210,8 @@ class DataRepository private constructor(private val context: Context, private  
     }
 
     //get all claims
-    fun getAllClaims(): MutableList<Claim>{
-        val numbOfClaims = preferences.getInt("numberOfClaims",0)
+    fun getAllClaimsFromSharedPrefrences(): MutableList<Claim>{
+        val numbOfClaims = preferences.getInt("numberOfClaims", 0)
         //Log.d("SHAREDPREF","this is now full of $numbOfClaims claims")
 
         if (numbOfClaims == 0){
@@ -231,11 +239,9 @@ class DataRepository private constructor(private val context: Context, private  
         val url = "${urlBase}getMethodMyClaims?$parameters"
         if(isConnected){
             sendMyClaimsRequest(url)
-            getAllImages()
         } else {
             offlineRequests.add{
                 sendMyClaimsRequest(url)
-                getAllImages()
             }
         }
     }
@@ -255,44 +261,73 @@ class DataRepository private constructor(private val context: Context, private  
         queue?.add(jsonRequest)
     }
 
-    private fun getAllImages(){
-        //for alle bilder
-        for(i in 0..preferences.getInt("numberOfClaims", 0)){
-            val photoname = preferences.getString("claimPhoto$i", null)
-            if (photoname != null){  //TODO check for existing files:  && noFiles(photoname)){
-                val url = "${urlBase}getMethodDownloadPhoto?$photoname"
-                val stringRequest = StringRequest(
-                    Request.Method.GET, url,
-                    { response ->
-                        Log.d("GET_IMAGE", "SERVER: SUCCESS. ServerClaims put in sharedpref")
-                        //create file
-                        createPhotoFile(photoname,response)
-                    },
-                    {
-                        // TODO: check if due to incorrect password or no contact with server (network/server down)
-                        Log.d("GET_IMAGE", "SERVER: FAILED DUE TO: ${it.message}")
-                    })
-                queue?.add(stringRequest)
+    fun updateImage(claimId: Int){
+        if(sendImage){
+            val photoname = preferences.getString("claimPhoto$claimId",null)
+            val pId = getUserId()
+            val imageString = preferences.getString(photoname,null)
+            if (pId!=null && imageString!=null){
+                addImageToServer(getClaimDataFromSharedPrefrences(claimId),pId,imageString)
+            }
+            else{
+                Log.d("UPDATE_IMAGE","not done because of pid:$pId or imageString:$imageString")
+            }
+        } else {
+            getClaimImageFromServer(claimId)
+        }
+    }
+
+    fun getClaimImageFromServer(claimId: Int) {
+        val photoname = preferences.getString("claimPhoto$claimId", null)
+        if (photoname != null) {  //TODO check for existing files:  && noFiles(photoname)){
+            val url = "${urlBase}getMethodDownloadPhoto?fileName=$photoname"
+            if (isConnected) {
+                sendGetImageRequest(url,photoname)
+            } else {
+                offlineRequests.add {
+                    sendGetImageRequest(url,photoname)
+                }
             }
         }
     }
 
-    /*private fun noFiles(photoName: String): Boolean {
-        return true //se etter filer i gallery
-        val storageDir: File = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-    }*/
+    private fun sendGetImageRequest(url: String,photoname: String) {
+        val stringRequest = StringRequest(
+            Request.Method.GET, url,
+            { response ->
+                Log.d("GET_IMAGE", "SERVER: SUCCESS. Server image put in sharedpref")
+                preferences.edit().apply{putString("$photoname",response);commit()}
+                Log.d("GET_IMAGE", "image $photoname now: ${if(response.length>10) response.substring(0,10) else "null"}, see: ${preferences.getString(photoname,null)}")
 
-    private fun createPhotoFile(photoName: String, response: String){
-        //lag bildefil og skriv response
-        // Create an image file name
-        val storageDir: File = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        File.createTempFile(
-            photoName, /* prefix */
-            ".jpg", /* suffix */
-            storageDir /* directory */
-        ).apply {
-            //TODO les inn i filen
+            },
+            {
+                // TODO: check if due to incorrect password or no contact with server (network/server down)
+                Log.d("GET_IMAGE", "SERVER: FAILED DUE TO: ${it.message}")
+            })
+        queue?.add(stringRequest)
+    }
+
+    fun getClaimImageFromPreferences(claimId: Int): Bitmap?{
+        //if no photoname return null
+        val photoname = preferences.getString("claimPhoto$claimId", null)
+        // ?: return Log.d("GET_IMAGE_FAIL","no image for claimPhoto$claimId")
+        if(photoname==null){
+            Log.d("GET_IMAGE_FAIL","no image for claimPhoto$claimId")
+            return null
         }
+        Log.d("Get_Image", "photoname in sharedPref $photoname")
+        //find the file and return as a bitmap
+        /*val storageDir: File = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        val photopath = storageDir.absolutePath+"/"+photoname
+        return BitmapFactory.decodeFile(photopath)*/
+        val photoString = preferences.getString(photoname,null)//?: return null
+        if(photoString==null){
+            Log.d("GET_IMAGE_FAIL","no image for $photoname")
+            return null
+        }
+        val decodedString: ByteArray = Base64.decode(photoString, Base64.URL_SAFE)
+        return BitmapFactory.decodeByteArray(decodedString, 0, decodedString.size)//Bitmap.Config.ARGB_8888)
+        //return BitmapFactory.decodeByteArray(photoString.toByteArray(),0,photoString.length)
     }
 
     private fun insertServerClaimsIntoSharedPref(
@@ -306,6 +341,7 @@ class DataRepository private constructor(private val context: Context, private  
             for (i in 0 until numOfClaims) {
                 putString("claimID$i", i.toString())
                 putString("claimDes$i", serverClaimsResponse.getJSONArray("claimDes")[i].toString())
+                sendImage = false
                 putString(
                     "claimPhoto$i",
                     serverClaimsResponse.getJSONArray("claimPhoto")[i].toString()
@@ -316,6 +352,9 @@ class DataRepository private constructor(private val context: Context, private  
                 )
             }
             apply()
+            Log.d("GETCLAMS","photo now ${preferences.getString("claimPhoto0",null)}")
+            Log.d("GETCLAMS","photo now ${preferences.getString("claimPhoto1",null)}")
+            Log.d("GETCLAMS","photo now ${preferences.getString("claimPhoto2",null)}")
         }
         Log.d("GET_CLAIMS", "SERVER response put into shared preferences: ${serverClaimsResponse}")
     }
@@ -327,20 +366,15 @@ class DataRepository private constructor(private val context: Context, private  
         claim: Claim,
         imageString: String?
     ){
+        preferences.edit().apply(){ putString(claim.claimPhoto,imageString);commit()}
         insertClaimIntoSharedPreferences(numbOfClaims, claim)
         val personID = preferences.getString("personID", "na")
         if(isConnected){
             Log.d("HANDLE_OFFLINE", "make request now!")
             addClaimToServer(claim, personID)
-            if (imageString != null){
-                addImageToServer(claim, personID, imageString)
-            }
         } else {
             Log.d("HANDLE_OFFLINE", "make request later!")
             offlineRequests.add { addClaimToServer(claim, personID) }
-            if (imageString != null){
-                offlineRequests.add { addImageToServer(claim, personID, imageString) }
-            }
         }
     }
 
@@ -352,9 +386,10 @@ class DataRepository private constructor(private val context: Context, private  
             putInt("numberOfClaims", numbOfClaims + 1)
             putString("claimID$numbOfClaims", numbOfClaims.toString())
             putString("claimDes$numbOfClaims", claim.claimDes)
+            sendImage = true
             putString("claimPhoto$numbOfClaims", claim.claimPhoto)
             putString("claimLocation$numbOfClaims", claim.claimLocation)
-            apply()
+            commit()
         }
     }
 
@@ -430,6 +465,7 @@ class DataRepository private constructor(private val context: Context, private  
         val prevStatus = preferences.getString("claimStatus${claim.claimID}", "0").toInt()
         preferences.edit().apply{
             putString("claimDes${claim.claimID}", claim.claimDes)
+            sendImage = true
             putString("claimPhoto${claim.claimID}", claim.claimPhoto)
             putString("claimLocation${claim.claimID}", claim.claimLocation)
             putString("claimStatus${claim.claimID}", (prevStatus + 1).toString())
@@ -460,7 +496,7 @@ class DataRepository private constructor(private val context: Context, private  
     }
 
     fun doWaitingRequests(){
-        Log.d("HANDLE_OFFLINE", "make offlined requests now")
+        Log.d("HANDLE_OFFLINE", "make offlined requests now, there are ${offlineRequests.size} ")
         while (isConnected && offlineRequests.isNotEmpty()){
             offlineRequests.removeAt(0)()
         }

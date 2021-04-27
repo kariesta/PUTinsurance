@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.ConnectivityManager
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
@@ -37,10 +39,12 @@ class MainActivity : AppCompatActivity() {
     private var currentPhotoPath: String  = ""
     private lateinit var sharedPref: SharedPreferences
     private var currentPhotoFilename: String  = ""
+    private var imageBitmap: Bitmap?  = null
     private lateinit var dataRepository: DataRepository
     private lateinit var receiver: NetworkReceiver
     private val mapTag = "map"
     private val photoTag = "photo"
+    private lateinit var sharedPrefListner: SharedPreferences.OnSharedPreferenceChangeListener
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,11 +56,19 @@ class MainActivity : AppCompatActivity() {
         val filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)//ConnectivityManager.CONNECTIVITY_ACTION)
         registerReceiver(receiver, filter)
         Log.d("networked", "its listening!")
+        //when image-names are added/changed
+        sharedPrefListner = SharedPreferences.OnSharedPreferenceChangeListener{ _: SharedPreferences?,key:String ->
+            if(key.contains("claimID")){
+                Log.d("LISTEN FOR IMAGE", "image found is : $key, with ${key.last().toString().toInt()}")
+                dataRepository.updateImage(key.last().toString().toInt())
+            } }
+        sharedPref.registerOnSharedPreferenceChangeListener(sharedPrefListner)
     }
 
 
     override fun onDestroy() {
         unregisterReceiver(receiver)
+        sharedPref.unregisterOnSharedPreferenceChangeListener(sharedPrefListner)
         super.onDestroy()
     }
 
@@ -237,9 +249,9 @@ class MainActivity : AppCompatActivity() {
 
     @Throws(IOException::class)
     private fun createImageFile(claimNumber: Int): File {
-        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
+        //val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
         val storageDir: File = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        currentPhotoFilename = "photo$claimNumber-$timeStamp"
+        currentPhotoFilename = "photo$claimNumber"//-$timeStamp"
         Log.d("UPLOADIMAGE","image of number $claimNumber with $currentPhotoFilename")
         return File.createTempFile(
             currentPhotoFilename, /* prefix */
@@ -294,6 +306,7 @@ class MainActivity : AppCompatActivity() {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             val f = File(currentPhotoPath)
             val imageView = findViewById<ImageView>(R.id.photoPreviewView)
+            imageBitmap = BitmapFactory.decodeFile(currentPhotoPath)
             imageView.setImageURI(Uri.fromFile(f))
         }
     }
@@ -303,12 +316,13 @@ class MainActivity : AppCompatActivity() {
 
         //collect all data from form
         val photoName = currentPhotoFilename
+        //val photoBitmap = imageBitmap
         val longString = findViewById<TextView>(R.id.LongitudeField).text.toString()
         val latString = findViewById<TextView>(R.id.LatitudeField).text.toString()
         val descString = findViewById<TextView>(R.id.DescriptionField).text.toString()
         val numbOfClaims = sharedPref.getInt("numberOfClaims", 0)
         val imageBytes = File(currentPhotoPath).readBytes()
-        val imageString: String = android.util.Base64.encodeToString(imageBytes,android.util.Base64.DEFAULT)
+        val imageString: String = android.util.Base64.encodeToString(imageBytes,android.util.Base64.URL_SAFE)
 
         //Legger inn nye verdier
         dataRepository.addClaim(numbOfClaims,Claim(numbOfClaims.toString(), descString, photoName,"$latString-$longString","0"),imageString)
