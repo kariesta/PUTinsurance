@@ -1,18 +1,12 @@
-package com.example.putinsurance
+package com.example.putinsurance.fragments
 
 import android.os.Bundle
-import android.os.Handler
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
-import android.widget.Button
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
-import com.example.putinsurance.data.DataRepository
+import com.example.putinsurance.R
 import com.example.putinsurance.utils.InjectorUtils
 
 /**

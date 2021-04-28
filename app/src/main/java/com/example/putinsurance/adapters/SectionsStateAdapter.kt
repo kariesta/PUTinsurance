@@ -1,8 +1,9 @@
-package com.example.putinsurance.ui.main
+package com.example.putinsurance.adapters
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager2.adapter.FragmentStateAdapter
+import com.example.putinsurance.fragments.TabItemFragment
 
 
 /**

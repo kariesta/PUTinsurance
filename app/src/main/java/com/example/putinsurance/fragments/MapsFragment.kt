@@ -20,6 +20,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import java.lang.Exception
 import java.lang.NumberFormatException
 
 class MapsFragment : Fragment() {
@@ -59,7 +60,7 @@ class MapsFragment : Fragment() {
 
         // IMPORTANT!! The scope of the viewmodel MUST be the same in the different fragments,
         // or else you will get a different viewmodel
-        val factory = InjectorUtils.provideTabViewModelFactory(this.requireActivity())
+        val factory = InjectorUtils.provideTabViewModelFactory(requireActivity())
         tabViewModel = ViewModelProvider(this.requireActivity(), factory).get(TabViewModel::class.java)
 
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
@@ -90,7 +91,7 @@ class MapsFragment : Fragment() {
             // Zoom in at a specific level
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pos, 5F))
 
-        } catch (e : NumberFormatException) {
+        } catch (e : Exception) {
             Log.d("Fetch", "Coordinates not valid")
         }
     }

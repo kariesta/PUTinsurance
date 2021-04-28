@@ -45,7 +45,7 @@ class PhotoFragment : Fragment() {
             Log.d("Fetch", "Setting new image resource")
 
             // TODO
-            photo_accident.setImageBitmap(it.toBitmap())
+            //photo_accident.setImageBitmap(it.toBitmap())
 
             /*when (it) {
                 0 -> photo_accident.setImageResource(R.drawable.car_crash_0)

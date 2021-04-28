@@ -15,41 +15,28 @@ class TabViewModel(private val dataRepository: DataRepository): ViewModel() {
 
     // for Kari. Observe this variable
     var photo : MutableLiveData<String> = MutableLiveData()
-
-    //var claim : MutableLiveData<Claim> = MutableLiveData()
-
     var location = MutableLiveData<String>()
 
-    fun getNumOfTabs() = dataRepository.getNumberOfClaims()
+    fun getNumOfTabs() =
+        dataRepository.getNumberOfClaims()
 
-    fun setTab(position: Int) {
-        Log.d("Fetch", "setIndex($position)")
-
-        // dataRepository.getNumberOfClaims()
-        //val tabs = 5
-        val id = getNumOfTabs() - position - 1
-
-        val claim = dataRepository.getClaimDataFromSharedPrefrences(id)
-
-        //claim.value = dataRepository.getClaimDataFromSharedPrefrences(id)
-        //index.value = id
-
-        // Updating location
-        //location.value = claim.claimLocation
-
-        // for Kari
-        // Updating photo
-        //photo.value = claim.claimPhoto
-
-        notifyChanged(claim)
-    }
+    fun getClaim(position: Int) =
+        dataRepository.getClaimDataFromSharedPrefrences(position - 1)
 
     fun updateClaim(claim: Claim, imageString : String) {
         dataRepository.updateClaim(claim, imageString)
         notifyChanged(claim)
     }
 
-    fun notifyChanged(claim: Claim) {
+    fun setTab(position: Int) {
+        Log.d("Fetch", "setIndex($position)")
+
+        dataRepository
+            .getClaimDataFromSharedPrefrences(position)
+            .value?.let { notifyChanged(it) }
+    }
+
+    private fun notifyChanged(claim: Claim) {
         if (claim.claimLocation != location.value)
             location.value = claim.claimLocation
 

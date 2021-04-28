@@ -23,7 +23,8 @@
             android:textColor="@color/colorOnPrimary"
             android:layout_margin="@dimen/fab_margin"
             app:layout_constraintTop_toBottomOf="@+id/claimIdText"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            android:textSize="18sp" />
 
     <Button
             android:text="Edit"

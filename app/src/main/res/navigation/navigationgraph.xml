@@ -52,7 +52,7 @@
     </fragment>
     <fragment
             android:id="@+id/fullscreenFragment"
-            android:name="com.example.putinsurance.LaunchFragment"
+            android:name="com.example.putinsurance.fragments.LaunchFragment"
             android:label="fragment_fullscreen"
             tools:layout="@layout/fragment_launch" >
         <action

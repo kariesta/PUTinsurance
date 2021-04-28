@@ -1,4 +1,4 @@
-package com.example.putinsurance.ui.main
+package com.example.putinsurance.fragments
 
 import android.os.Bundle
 import android.text.InputType
@@ -23,22 +23,23 @@ import kotlinx.android.synthetic.main.fragment_tab_item.*
  */
 class TabItemFragment : Fragment() {
 
-    private lateinit var stateViewModel: StateViewModel
     private lateinit var tabViewModel : TabViewModel
     private lateinit var claim: Claim
+    private var sectionNumber: Int = 1
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val factoryState = InjectorUtils.provideTabItemViewModelFactory(this.requireContext())
+        /*val factoryState = InjectorUtils.provideTabItemViewModelFactory(requireContext())
         stateViewModel = ViewModelProvider(this,factoryState).get(StateViewModel::class.java).apply {
             setIndex(arguments?.getInt(ARG_SECTION_NUMBER) ?: 1)
-        }
+        }*/
 
         Log.d("TabItem", "Creating fragment ${arguments?.getInt(ARG_SECTION_NUMBER) ?: 1}")
+        sectionNumber = arguments?.getInt(ARG_SECTION_NUMBER) ?: 1
 
         // Not sure if good to do...
-        val factoryTab = InjectorUtils.provideTabViewModelFactory(this.requireActivity())
+        val factoryTab = InjectorUtils.provideTabViewModelFactory(requireActivity())
         tabViewModel = ViewModelProvider(this.requireActivity(), factoryTab).get(TabViewModel::class.java)
     }
 
@@ -48,7 +49,11 @@ class TabItemFragment : Fragment() {
     ): View? {
         val root = inflater.inflate(R.layout.fragment_tab_item, container, false)
 
-        stateViewModel.claim.observe(viewLifecycleOwner, Observer<Claim> {
+        tabViewModel.getClaim(sectionNumber).observe(viewLifecycleOwner, Observer<Claim> {
+            Log.d("TI id", it.claimID)
+            Log.d("TI location", it.claimLocation)
+            Log.d("TI description", it.claimLocation)
+
             claim = it
             claimIdField.text = it.claimID
             claimLocField.setText(it.claimLocation)

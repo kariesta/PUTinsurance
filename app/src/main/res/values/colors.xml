@@ -8,7 +8,7 @@
 
     <!-- Lighter or darker shades of the brand colors -->
     <color name="colorPrimaryVariant">#A0D0F6</color>
-    <color name="colorSecondaryVariant">#6E100E</color>
+    <color name="colorSecondaryVariant">#505050</color>
 
     <!-- Color on brand coloured surfaces -->
     <color name="colorOnPrimary">#000000</color> <!-- Color of elements on buttons and such -->
