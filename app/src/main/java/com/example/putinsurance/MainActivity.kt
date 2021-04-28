@@ -336,6 +336,8 @@ class MainActivity : AppCompatActivity() {
         val numbOfClaims = sharedPref.getInt("numberOfClaims", 0)
         val imageBytes = if(currentPhotoPath!="")File(currentPhotoPath).readBytes() else null
         val imageString: String = if(currentPhotoPath!="") android.util.Base64.encodeToString(imageBytes,android.util.Base64.URL_SAFE) else ""
+        currentPhotoFilename = ""
+        currentPhotoPath = ""
 
         //Legger inn nye verdier
         Log.d("ADD_CLAIM_ERROR?", "Now putting in addition of  numclam$numbOfClaims desc$descString pname$photoName lat$latString long$longString imString${if(imageString.length>6) imageString.substring(0,5) else "nothing"}")
