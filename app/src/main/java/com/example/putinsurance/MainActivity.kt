@@ -207,7 +207,7 @@ class MainActivity : AppCompatActivity() {
                 dataRepository.getAllClaimsFromServer(true)
                 Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_tabFragment)
             } else {
-                Snackbar.make(view, "Login failed due to $failReason", Snackbar.LENGTH_LONG).show()
+                Snackbar.make(view, "Login failed due to $failReason.", Snackbar.LENGTH_LONG).show()
                 //Toast.makeText(this, "login failed due to $failReason", Toast.LENGTH_SHORT).show()
             }
         }
@@ -360,7 +360,7 @@ class MainActivity : AppCompatActivity() {
                 Snackbar.make(view, "Password is updated.", Snackbar.LENGTH_LONG).show()
                 //Toast.makeText(this, "password is updated", Toast.LENGTH_SHORT).show()
             } else {
-                Snackbar.make(view, "Login failed due to $failReason", Snackbar.LENGTH_LONG).show()
+                Snackbar.make(view, "Login failed due to $failReason.", Snackbar.LENGTH_LONG).show()
                 //Toast.makeText(this, "login failed due to $failReason", Toast.LENGTH_SHORT).show()
             }
         }

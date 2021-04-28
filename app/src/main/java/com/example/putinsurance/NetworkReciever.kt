@@ -43,7 +43,6 @@ class NetworkReceiver constructor(private val dataRepository: DataRepository) : 
             }
             if (!serverDown){
                 Log.d("networked", "connected!")
-                Toast.makeText(context, "connected!", Toast.LENGTH_SHORT).show()
                 isConnected = true
                 dataRepository.doWaitingRequests()
             } else {
