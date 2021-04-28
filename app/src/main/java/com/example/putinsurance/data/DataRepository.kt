@@ -6,15 +6,15 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Base64
 import android.util.Log
-import com.android.volley.DefaultRetryPolicy
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import org.json.JSONObject
+import java.net.InetAddress
 
 
 class DataRepository private constructor(
@@ -27,6 +27,10 @@ class DataRepository private constructor(
         const val WIFI = "Wi-Fi"
         const val ANY = "Any"
         var isConnected = false
+        var serverDown = false
+        private val ip = "10.0.2.2"
+        private val port = "8080"
+        private val urlBase = "http://$ip:$port/"
 
         fun getInstance(context: Context, preferences: SharedPreferences) = instance ?: synchronized(
             this
@@ -35,11 +39,10 @@ class DataRepository private constructor(
         }
     }
 
-    private val ip = "10.0.2.2"
-    private val port = "8080"
-    private val urlBase = "http://$ip:$port/"
     private var queue : RequestQueue? =  Volley.newRequestQueue(context)
-    private var offlineRequests: MutableList<() -> Unit> = mutableListOf()
+    private var offlineGetRequests: MutableList<() -> Unit> = mutableListOf()
+    private var offlinePostRequests: MutableList<String> = mutableListOf()
+
     private val SENDDESPITELOGOUT = "SEND_DESPITE_LOGOUT"
     private var sendImage = false //when photonames are changed either send to server, or request from server.
 
@@ -55,6 +58,7 @@ class DataRepository private constructor(
         try {
             validateUserBySharedPreferences(email, passHash, callback)
         } catch (e: NullPointerException) {
+            checkServer()
             if(isConnected){
                 validateUserByServer(email, passHash, callback)
             }else{
@@ -125,7 +129,8 @@ class DataRepository private constructor(
                 // TODO: check if due to incorrect password or no contact with server (network/server down)
                 Log.d("logIn", "SERVER: FAILED TO CONNECT")
                 callback(false, "failed to connect to server")
-
+                serverDown = true
+                isConnected = false
             })
         /*jsonRequest.retryPolicy =
             DefaultRetryPolicy(
@@ -152,22 +157,24 @@ class DataRepository private constructor(
 
     }
 
-    //delete all data on logout
+    //delete all data on logout, except from unsendt updates.
     fun deleteFromSharedPreferences() {
-        //TODO register that if there is still data left, it should be kept and sendt later
+        var oldUpdates = offlinePostRequests
+        val pastUpdates = preferences.getStringSet("pastUsersCalls",null)
+        if (pastUpdates!=null){
+            oldUpdates.addAll(pastUpdates)
+        }
+
         preferences.edit().apply {
-            remove("email")
-            remove("passHash")
-            remove("personID")
-            //val numbOfClaims = preferences.getInt("numberOfClaims",0)
             clear()
+            putStringSet("pastUsersCalls", oldUpdates.toSet())
             apply()
         }
     }
 
     fun changePassword(password: String, passHash: String, callback: (Boolean, String) -> Unit) {
 
-        if(isConnected){
+        if(!isConnected){
             callback(false, "offline device")
         }
 
@@ -194,11 +201,10 @@ class DataRepository private constructor(
             {
                 callback(false, "failed to connect ot server")
                 Log.d("changePass", "SERVER: FAILED TO CONNECT")
+                serverDown = true
+                isConnected = false
             })
-
         queue?.add(stringRequest)
-        return
-
     }
 
     //get number of claims
@@ -209,16 +215,18 @@ class DataRepository private constructor(
     //get each claimField by id/get all claimfields for one id
     fun getClaimDataFromSharedPrefrences(id: Int): MutableLiveData<Claim> {
         @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
-        return MutableLiveData(Claim(
-            preferences.getString("claimID$id", ""),
-            preferences.getString(
-                "claimDes$id",
-                ""
-            ),
-            preferences.getString("claimPhoto$id", ""),
-            preferences.getString("claimLocation$id", "-"),
-            preferences.getString("claimStatus$id", "")
-        ))
+        return MutableLiveData(
+            Claim(
+                preferences.getString("claimID$id", ""),
+                preferences.getString(
+                    "claimDes$id",
+                    ""
+                ),
+                preferences.getString("claimPhoto$id", ""),
+                preferences.getString("claimLocation$id", "-"),
+                preferences.getString("claimStatus$id", "")
+            )
+        )
     }
 
     //get all claims
@@ -252,7 +260,7 @@ class DataRepository private constructor(
         if(isConnected){
             sendMyClaimsRequest(url)
         } else if (essensial) {
-            offlineRequests.add{
+            offlineGetRequests.add{
                 Log.d("OFFLINEACT", "NOW getAllClaimsFromServer $url")
                 sendMyClaimsRequest(url)
             }
@@ -269,13 +277,16 @@ class DataRepository private constructor(
             {
                 // TODO: check if due to incorrect password or no contact with server (network/server down)
                 Log.d("GET_CLAIMS", "SERVER: FAILED DUE TO: ${it.message}")
+                serverDown = true
+                isConnected = false
+                //not adding to offlinerequests to avoid many similar requests
             })
-        /*jsonRequest.retryPolicy =
+        jsonRequest.retryPolicy =
             DefaultRetryPolicy(
                 5000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
-            )*/
+            )
 
         queue?.add(jsonRequest)
     }
@@ -301,10 +312,10 @@ class DataRepository private constructor(
                         "UPDATE_IMAGE",
                         "LATER adding image for $claimId with strings ${imageString.length}"
                     )
-                    offlineRequests.add {
+                    offlinePostRequests.add(url)/* {
                         Log.d("OFFLINEACT", "NOW addImageToServer$pId")
                         addImageToServer(url)
-                    }
+                    }*/
                 }
             }
             else{
@@ -316,7 +327,7 @@ class DataRepository private constructor(
                 getClaimImageFromServer(claimId)
             } else {
                 Log.d("UPDATE_IMAGE", "LATER fetching  image for $claimId from server")
-                offlineRequests.add {
+                offlineGetRequests.add {
                     Log.d("OFFLINEACT", "NOW getClaimImageFromServer$claimId")
                     getClaimImageFromServer(claimId)
                 }
@@ -331,7 +342,7 @@ class DataRepository private constructor(
             if (isConnected) {
                 sendGetImageRequest(url, photoname)
             } else {
-                offlineRequests.add {
+                offlineGetRequests.add {
                     Log.d("OFFLINEACT", "NOW sendGetImageRequest $url  $photoname")
                     sendGetImageRequest(url, photoname)
                 }
@@ -358,13 +369,19 @@ class DataRepository private constructor(
             {
                 // TODO: check if due to incorrect password or no contact with server (network/server down)
                 Log.d("GET_IMAGE", "SERVER: FAILED DUE TO: ${it.message}")
+                serverDown = true
+                isConnected = false
+                offlineGetRequests.add {
+                    Log.d("OFFLINEACT", "NOW sendGetImageRequest $url  $photoname")
+                    sendGetImageRequest(url, photoname)
+                }
             })
-        /*stringRequest.retryPolicy =
+        stringRequest.retryPolicy =
             DefaultRetryPolicy(
                 5000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
-            )*/
+            )
         queue?.add(stringRequest)
     }
 
@@ -447,10 +464,10 @@ class DataRepository private constructor(
             addClaimToServer(url)
         } else {
             Log.d("HANDLE_OFFLINE", "make request later!")
-            offlineRequests.add {
+            offlinePostRequests.add(url) /*{
                 Log.d("OFFLINEACT", "NOW addClaimToServer $claim  $personID")
                 addClaimToServer(url)
-            }
+            }*/
         }
     }
 
@@ -490,14 +507,17 @@ class DataRepository private constructor(
                 Log.d("ADD_CLAIM", "SERVER: FAILED DUE TO ${error.message}")
                 //handle error if server down, note that not connected and put in que again? maybe some resting time.
                 //handle error if network low.
+                serverDown = true
+                isConnected = false
+                offlinePostRequests.add(url)
             }
         )
-        /*stringRequest.retryPolicy =
+        stringRequest.retryPolicy =
             DefaultRetryPolicy(
                 5000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
-            )*/
+            )
         stringRequest.tag = SENDDESPITELOGOUT
         queue?.add(stringRequest)
     }
@@ -512,24 +532,47 @@ class DataRepository private constructor(
         val stringRequest = StringRequest(
             Request.Method.POST, url,
             { _ ->
+                preferences.edit().apply {
+                    putString(
+                        "updateClaim${
+                            url.split("=")[2].substring(
+                                0,
+                                1
+                            )
+                        }Photo", url
+                    ); commit()
+                }
                 //response to successful request
                 Log.d("ADD_CLAIM", "SERVER: SUCCESS.")
             },
             //response to unsuccessful request
             { error ->
+                preferences.edit().apply {
+                    putString(
+                        "updateClaim${
+                            url.split("=")[2].substring(
+                                0,
+                                1
+                            )
+                        }Photo", url
+                    ); commit()
+                }
                 Log.d("ADD_CLAIM_IMAGE", "SERVER: FAILED TO CONNECT WITH $url")
                 Log.d("ADD_CLAIM_IMAGE", "SERVER: FAILED DUE TO ${error.message}")
                 //preferences.edit().apply { putString("updateClaim${claimId}Photo",url); commit()} //???
                 //handle error if server down, note that not connected and put in que again? maybe some resting time.
                 //handle error if network low.
+                serverDown = true
+                isConnected = false
+                offlinePostRequests.add(url)
             }
         )
-        /*stringRequest.retryPolicy =
+        stringRequest.retryPolicy =
             DefaultRetryPolicy(
                 5000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
-            )*/
+            )
         stringRequest.tag = SENDDESPITELOGOUT
         queue?.add(stringRequest)
     }
@@ -540,7 +583,7 @@ class DataRepository private constructor(
     ){
         val status = updateClaimInSharedPreferences(claim)
         val personID = preferences.getString("personID", "na")
-        val parameters = "userId=$personID&indexUpdateClaim=${claim.claimID}&newClaimDes=${claim.claimDes}&newClaimPho=${claim.claimPhoto}&newClaimLoc=${claim.claimPhoto}&newClaimSta=${status}"
+        val parameters = "userId=$personID&indexUpdateClaim=${claim.claimID}&updateClaimDes=${claim.claimDes}&updateClaimPho=${claim.claimPhoto}&updateClaimLoc=${claim.claimPhoto}&updateClaimSta=${status}"
         val url = "http://$ip:$port/postUpdateClaim?$parameters"
         preferences.edit().apply { putString("updateClaim${claim.claimID}", url); commit()}
         if(isConnected){
@@ -548,10 +591,10 @@ class DataRepository private constructor(
             updateClaimInServer(url)
         } else {
             Log.d("HANDLE_OFFLINE", "make request later!")
-            offlineRequests.add {
+            offlinePostRequests.add(url) /* {
                 Log.d("OFFLINEACT", "NOW updateClaimInServer $claim $status $personID")
                 updateClaimInServer(url)
-            }
+            }*/
         }
     }
 
@@ -576,84 +619,102 @@ class DataRepository private constructor(
             Request.Method.POST, url,
             { _ ->
                 //response to successful request
+                preferences.edit().apply { remove("updateClaim${
+                    url.split("=")[2].substring(
+                        0,
+                        1
+                    )
+                }"); commit() }
                 Log.d("UPDATE_CLAIM", "SERVER: SUCCESS.")
             },
             //response to unsuccessful request
             { error ->
+                preferences.edit().apply { putString("updateClaim${
+                    url.split("=")[2].substring(
+                        0,
+                        1
+                    )
+                }", url); commit() }
                 Log.d("UPDATE_CLAIM", "SERVER: FAILED TO CONNECT WITH $url")
                 Log.d("UPDATE_CLAIM", "SERVER: FAILED DUE TO ${error.message}")
                 //handle error if server down, note that not connected and put in que again? maybe some resting time.
                 //handle error if network low.
             }
         )
-        /*stringRequest.retryPolicy =
+        stringRequest.retryPolicy =
             DefaultRetryPolicy(
                 5000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
-            )*/
+            )
         queue?.add(stringRequest)
     }
 
     fun doWaitingRequests(){
-        Log.d("HANDLE_OFFLINE", "make offlined requests now, there are ${offlineRequests.size} ")
-        Log.d("HANDLE_OFFLINE", "${offlineRequests.toString()} ")
-        while (isConnected && offlineRequests.isNotEmpty()){
-            offlineRequests.removeAt(0)()
+        Log.d(
+            "HANDLE_OFFLINE",
+            "make offlined requests now, there are ${offlinePostRequests.size} "
+        )
+        Log.d("HANDLE_OFFLINE", "${offlinePostRequests.toString()} ")
+        while (isConnected && offlinePostRequests.isNotEmpty()){
+            // stringRequest
+            val stringRequest = StringRequest(
+                Request.Method.POST, offlinePostRequests[0],
+                { _ ->
+                    offlinePostRequests.removeAt(0)
+                },
+                {
+                    Log.d("changePass", "SERVER: FAILED TO CONNECT")
+                    isConnected = false
+                    serverDown = true
+                })
+
+            queue?.add(stringRequest)
+        }
+        Log.d("HANDLE_OFFLINE", "make offlined requests now, there are ${offlineGetRequests.size} ")
+        Log.d("HANDLE_OFFLINE", "${offlineGetRequests.toString()} ")
+        while (isConnected && offlineGetRequests.isNotEmpty()){
+            offlineGetRequests.removeAt(0)()
+        }
+    }
+
+    fun checkServer(){
+        return try {
+            InetAddress.getByName(urlBase).isReachable(3000) //Replace with your name
+            serverDown = false
+        } catch (e: Exception) {
+            Log.d("CHECK_SERVER","${e.message}")
+            serverDown = true
         }
     }
 
     fun checkForOldUpdates(){
-        if(isConnected){
-            Log.d("HANDLE_OFFLINE", "make request now!")
-            //les urler og kall dem, deretter rens dem.
-            var i = 0
-            while (isConnected && i<5){
-                var url = preferences.getString("updateClaim${i}", null)
-                if(url != null){
-                    updateClaimInServer(url)
-                }
-                url = preferences.getString("addClaim${i}Content", null)
-                if(url != null){
-                    addClaimToServer(url)
-                }
-                url = preferences.getString("updateClaim${i}Photo", null)
-                if(url != null){
-                    addImageToServer(url)
-                }
-                i++
-            }
-            //updateClaimInServer(url)
-        } else {
-            Log.d("HANDLE_OFFLINE", "make request later!")
-            for ( i in 0.until(5)){
-                var url = preferences.getString("updateClaim${i}", null)
-                if(url != null){
-                    offlineRequests.add {
-                        Log.d("OFFLINEACT", "NOW updateClaimInServer")// $claim $status $personID")
-                        updateClaimInServer(url)
-                        preferences.edit().remove("updateClaim${i}")
-                    }
-                }
-                url = preferences.getString("addClaim${i}Content", null)
-                if(url != null){
-                    offlineRequests.add {
-                        Log.d("OFFLINEACT", "NOW updateClaimInServer")// $claim $status $personID")
-                        addClaimToServer(url)
-                        preferences.edit().remove("addClaim${i}Content")
-
-                    }
-                }
-                url = preferences.getString("updateClaim${i}Photo", null)
-                if(url != null){
-                    offlineRequests.add {
-                        Log.d("OFFLINEACT", "NOW updateClaimInServer")// $claim $status $personID")
-                        addImageToServer(url)
-                        preferences.edit().remove("updateClaim${i}Photo")
-
-                    }
-                }
-            }
+        //get old postrequest URLs from shared preferences and make requests
+        var oldUpdates = preferences.getStringSet("pastUsersCalls", null)
+        if(oldUpdates==null || oldUpdates.isEmpty()){
+            Log.d("CHECK_OLD_UPDATES","no old ones")
+            return
+        }
+        if(!isConnected){
+            Log.d("CHECK_OLD_UPDATES","putting olds in offlinePost there are ${oldUpdates.size}")
+            offlinePostRequests.addAll(0,oldUpdates)
+        }
+        while (isConnected && oldUpdates.isNotEmpty()){
+            // stringRequest
+            val stringRequest = StringRequest(
+                Request.Method.POST, oldUpdates.first(),
+                { _ ->
+                    Log.d("CHECK_OLD_UPDATES","successfully sendt old request")
+                    oldUpdates.remove(oldUpdates.first())
+                },
+                {
+                    Log.d("CHECK_OLD_UPDATES","error in sending old request, putting in offlineReqs")
+                    isConnected = false
+                    serverDown = true
+                    offlinePostRequests.addAll(0,oldUpdates)
+                    oldUpdates.remove(oldUpdates.first())
+                })
+            queue?.add(stringRequest)
         }
     }
 }

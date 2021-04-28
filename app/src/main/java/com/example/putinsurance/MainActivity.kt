@@ -70,6 +70,9 @@ class MainActivity : AppCompatActivity() {
         Log.d("RESUME_UPDATE","UPDATERING0")
         super.onResume()
         Log.d("RESUME_UPDATE","UPDATERING")
+        val resumeIntent = Intent(ConnectivityManager.CONNECTIVITY_ACTION)
+        //Trigger reciever to check if server is up.
+        receiver.onReceive(this,resumeIntent)
         if(dataRepository.getUserId()!=null){
             Log.d("RESUME_UPDATE","UPDATERING1")
             dataRepository.getAllClaimsFromServer(false)
