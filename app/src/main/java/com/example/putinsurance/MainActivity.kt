@@ -32,10 +32,10 @@ import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
-    val MAX_CLAIMS = 5
+    private val MAX_CLAIMS = 5
     private val REQUEST_IMAGE_CAPTURE = 1
     private var currentPhotoPath: String  = ""
-    private lateinit var sharedPref: SharedPreferences
+    //private lateinit var sharedPref: SharedPreferences
     private var currentPhotoFilename: String  = ""
     private lateinit var dataRepository: DataRepository
     private lateinit var receiver: NetworkReceiver
@@ -45,7 +45,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        sharedPref = getSharedPreferences("com.example.putinsurance", Context.MODE_PRIVATE)
         dataRepository = InjectorUtils.getDataRepository(this)
         // Registers BroadcastReceiver to track network connection changes.
         receiver = NetworkReceiver(dataRepository)
@@ -175,10 +174,10 @@ class MainActivity : AppCompatActivity() {
     // TODO: check if SINGLETON of shared preferences and queue is recommended
     fun logIn(view: View) {
         // Shared Preferences
-
+        Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_tabFragment)
         val emailText =  findViewById<TextView>(R.id.editTextTextEmailAddress).text.toString()
         val passwordHash = passwordToHashMD5(findViewById<TextView>(R.id.editTextTextPassword).text.toString())
-        val loginCallBack =  { valid: Boolean,failReason: String ->
+        /*val loginCallBack =  { valid: Boolean,failReason: String ->
             if(valid){
                 dataRepository.getAllClaimsFromServer()
                 Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_tabFragment)
@@ -188,7 +187,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // If email and password are in shared pref, nullpointerexception is not thrown
-        dataRepository.userValidation(emailText, passwordHash, loginCallBack)
+        dataRepository.userValidation(emailText, passwordHash, loginCallBack)*/
     }
 
 
@@ -214,7 +213,7 @@ class MainActivity : AppCompatActivity() {
 
     /**Tab functions*/
     fun newClaim(view: View) {
-        val numbOfClaims = sharedPref.getInt("numberOfClaims",0)
+        val numbOfClaims = dataRepository.getNumberOfClaims()
         if (numbOfClaims >= MAX_CLAIMS) {
             Toast.makeText(this,"claim limit reached", Toast.LENGTH_SHORT).show()
             return
@@ -265,7 +264,7 @@ class MainActivity : AppCompatActivity() {
             takePictureIntent.resolveActivity(packageManager)?.also {
                 // Create the File where the photo should go
                 val photoFile: File? = try {
-                    val nextClaimNumber = sharedPref.getInt("numberOfClaims",0)
+                    val nextClaimNumber = dataRepository.getNumberOfClaims()
                     createImageFile(nextClaimNumber)
                 } catch (ex: IOException) {
                     // Error occurred while creating the File
@@ -306,7 +305,7 @@ class MainActivity : AppCompatActivity() {
         val longString = findViewById<TextView>(R.id.LongitudeField).text.toString()
         val latString = findViewById<TextView>(R.id.LatitudeField).text.toString()
         val descString = findViewById<TextView>(R.id.DescriptionField).text.toString()
-        val numbOfClaims = sharedPref.getInt("numberOfClaims", 0)
+        val numbOfClaims = dataRepository.getNumberOfClaims()
         val imageBytes = File(currentPhotoPath).readBytes()
         val imageString: String = android.util.Base64.encodeToString(imageBytes,android.util.Base64.DEFAULT)
 
@@ -333,10 +332,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
         dataRepository.changePassword(password,passHash,changePasswordCallBack)
-    }
-
-    fun sendIndex(int: Int?) {
-
     }
 
     /** settings functions end*/
