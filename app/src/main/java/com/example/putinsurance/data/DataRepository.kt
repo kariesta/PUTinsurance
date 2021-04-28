@@ -287,7 +287,7 @@ class DataRepository private constructor(
             val imageString = preferences.getString(photoname, null)
             val claimToUpdate = getClaimDataFromSharedPrefrences(claimId)
             if (pId!=null && imageString!=null){
-                val parameters = "userId=$pId&claimId=${claimToUpdate.claimID}&fileName=${claimToUpdate.claimPhoto}&imageStringBase64=${imageString}"
+                val parameters = "userId=$pId&claimId=${claimToUpdate.value?.claimID}&fileName=${claimToUpdate.value?.claimPhoto}&imageStringBase64=${imageString}"
                 val url = "http://$ip:$port/postMethodUploadPhoto?$parameters"
                 preferences.edit().apply { putString("updateClaim${claimId}Photo", url); commit()}
                 if (isConnected) {
