@@ -583,7 +583,7 @@ class DataRepository private constructor(
     ){
         val status = updateClaimInSharedPreferences(claim)
         val personID = preferences.getString("personID", "na")
-        val parameters = "userId=$personID&indexUpdateClaim=${claim.claimID}&updateClaimDes=${claim.claimDes}&updateClaimPho=${claim.claimPhoto}&updateClaimLoc=${claim.claimPhoto}&updateClaimSta=${status}"
+        val parameters = "userId=$personID&indexUpdateClaim=${claim.claimID}&updateClaimDes=${claim.claimDes}&updateClaimPho=${claim.claimPhoto}&updateClaimLoc=${claim.claimLocation}&updateClaimSta=${status}"
         val url = "http://$ip:$port/postUpdateClaim?$parameters"
         preferences.edit().apply { putString("updateClaim${claim.claimID}", url); commit()}
         if(isConnected){

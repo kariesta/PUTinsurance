@@ -18,6 +18,7 @@ class TabViewModel(private val dataRepository: DataRepository): ViewModel() {
     // for Kari. Observe this variable
     var photo : MutableLiveData<Bitmap> = MutableLiveData()
     var location = MutableLiveData<String>()
+    var claim = MutableLiveData<Claim>()
 
     fun getNumOfTabs() =
         dataRepository.getNumberOfClaims()
@@ -32,10 +33,8 @@ class TabViewModel(private val dataRepository: DataRepository): ViewModel() {
 
     fun setTab(position: Int) {
         Log.d("Fetch", "setIndex($position)")
-
-        dataRepository
-            .getClaimDataFromSharedPrefrences(position)
-            .value?.let { notifyChanged(it) }
+        claim = dataRepository.getClaimDataFromSharedPrefrences(position)
+        claim.value?.let {it -> notifyChanged(it)}
     }
 
     private fun notifyChanged(claim: Claim) {
