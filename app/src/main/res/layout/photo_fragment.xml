@@ -11,7 +11,6 @@
 
     <ImageView
             android:layout_gravity="center"
-            android:src="@drawable/car_crash_0"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/photo_accident" />

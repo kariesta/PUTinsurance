@@ -13,6 +13,7 @@ import com.example.putinsurance.data.DataRepository.Companion.ANY
 import com.example.putinsurance.data.DataRepository.Companion.WIFI
 import com.example.putinsurance.data.DataRepository.Companion.isConnected
 import com.example.putinsurance.data.DataRepository.Companion.serverDown
+import com.google.android.material.snackbar.Snackbar
 
 class NetworkReceiver constructor(private val dataRepository: DataRepository) : BroadcastReceiver() {
 
@@ -57,7 +58,6 @@ class NetworkReceiver constructor(private val dataRepository: DataRepository) : 
                     )
                 }, net: ${networkInfo.toString()} "
             )
-            Toast.makeText(context, "Action: " + intent.action, Toast.LENGTH_SHORT).show()
         }
     }
 }

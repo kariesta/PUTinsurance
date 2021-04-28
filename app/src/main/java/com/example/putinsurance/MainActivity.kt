@@ -8,7 +8,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.ConnectivityManager
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
@@ -16,7 +15,8 @@ import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.navigation.Navigation
@@ -25,12 +25,13 @@ import com.example.putinsurance.data.DataRepository
 import com.example.putinsurance.fragments.MapsFragment
 import com.example.putinsurance.fragments.PhotoFragment
 import com.example.putinsurance.utils.InjectorUtils
+import com.google.android.material.snackbar.Snackbar
 import java.io.File
 import java.io.IOException
 import java.math.BigInteger
 import java.security.MessageDigest
-import java.text.SimpleDateFormat
 import java.util.*
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -58,23 +59,26 @@ class MainActivity : AppCompatActivity() {
         registerReceiver(receiver, filter)
         Log.d("networked", "its listening!")
         //when image-names are added/changed
-        sharedPrefListner = SharedPreferences.OnSharedPreferenceChangeListener{ _: SharedPreferences?,key:String ->
+        sharedPrefListner = SharedPreferences.OnSharedPreferenceChangeListener{ _: SharedPreferences?, key: String ->
             if(key.contains("claimID")){
-                Log.d("LISTEN FOR IMAGE", "image found is : $key, with ${key.last().toString().toInt()}")
+                Log.d(
+                    "LISTEN FOR IMAGE",
+                    "image found is : $key, with ${key.last().toString().toInt()}"
+                )
                 dataRepository.updateImage(key.last().toString().toInt())
             } }
         sharedPref.registerOnSharedPreferenceChangeListener(sharedPrefListner)
     }
 
     override fun onResume() {
-        Log.d("RESUME_UPDATE","UPDATERING0")
+        Log.d("RESUME_UPDATE", "UPDATERING0")
         super.onResume()
-        Log.d("RESUME_UPDATE","UPDATERING")
+        Log.d("RESUME_UPDATE", "UPDATERING")
         val resumeIntent = Intent(ConnectivityManager.CONNECTIVITY_ACTION)
         //Trigger reciever to check if server is up.
-        receiver.onReceive(this,resumeIntent)
+        receiver.onReceive(this, resumeIntent)
         if(dataRepository.getUserId()!=null){
-            Log.d("RESUME_UPDATE","UPDATERING1")
+            Log.d("RESUME_UPDATE", "UPDATERING1")
             dataRepository.getAllClaimsFromServer(false)
         }
     }
@@ -121,7 +125,10 @@ class MainActivity : AppCompatActivity() {
                 detachFragment(mapTag)
 
             Log.d("showMap", "mapTag != null")
-            Log.d("showMap != null", "${supportFragmentManager.findFragmentByTag(mapTag)!!.isVisible}")
+            Log.d(
+                "showMap != null",
+                "${supportFragmentManager.findFragmentByTag(mapTag)!!.isVisible}"
+            )
             attachFragment(mapTag)
         } else {
             Log.d("showMap", "mapTag == null")
@@ -164,21 +171,21 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun addFragment(fragment : Fragment, tag : String) {
+    private fun addFragment(fragment: Fragment, tag: String) {
         supportFragmentManager
             .beginTransaction()
             .add(R.id.fragment_container_view, fragment, tag)
             .commit()
     }
 
-    private fun attachFragment(tag : String) {
+    private fun attachFragment(tag: String) {
         supportFragmentManager
             .beginTransaction()
             .attach(supportFragmentManager.findFragmentByTag(tag)!!)
             .commit()
     }
 
-    private fun detachFragment(tag : String) {
+    private fun detachFragment(tag: String) {
         supportFragmentManager
             .beginTransaction()
             .detach(supportFragmentManager.findFragmentByTag(tag)!!)
@@ -203,12 +210,13 @@ class MainActivity : AppCompatActivity() {
         // Shared Preferences
         val emailText =  findViewById<TextView>(R.id.editTextTextEmailAddress).text.toString()
         val passwordHash = passwordToHashMD5(findViewById<TextView>(R.id.editTextTextPassword).text.toString())
-        val loginCallBack =  { valid: Boolean,failReason: String ->
+        val loginCallBack =  { valid: Boolean, failReason: String ->
             if(valid){
                 dataRepository.getAllClaimsFromServer(true)
                 Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_tabFragment)
             } else {
-                Toast.makeText(this,"login failed due to $failReason", Toast.LENGTH_SHORT).show()
+                Snackbar.make(view, "Login failed due to $failReason", Snackbar.LENGTH_LONG).show()
+                //Toast.makeText(this, "login failed due to $failReason", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -220,7 +228,7 @@ class MainActivity : AppCompatActivity() {
 
     // Convert to hash using MD5
     // https://www.geeksforgeeks.org/md5-hash-in-java/ USE MD5
-    private fun passwordToHashMD5(password : String) : String {
+    private fun passwordToHashMD5(password: String) : String {
         val bytes = MessageDigest
             .getInstance("MD5")
             .digest(password.toByteArray())
@@ -241,7 +249,7 @@ class MainActivity : AppCompatActivity() {
     fun newClaim(view: View) {
         val numbOfClaims = dataRepository.getNumberOfClaims()
         if (numbOfClaims >= MAX_CLAIMS) {
-            Toast.makeText(this,"claim limit reached", Toast.LENGTH_SHORT).show()
+            Snackbar.make(view, "Claim limit reached.", Snackbar.LENGTH_LONG).show()
             return
         }
         Navigation.findNavController(view).navigate(R.id.action_tabFragment_to_claimFormFragment)
@@ -265,19 +273,19 @@ class MainActivity : AppCompatActivity() {
         //val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
         val storageDir: File = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
         currentPhotoFilename = "photo$claimNumber"//-$timeStamp"
-        Log.d("UPLOADIMAGE","image of number $claimNumber with $currentPhotoFilename")
+        Log.d("UPLOADIMAGE", "image of number $claimNumber with $currentPhotoFilename")
         return File.createTempFile(
             currentPhotoFilename, /* prefix */
             ".jpg", /* suffix */
             storageDir /* directory */
         ).apply {
             // Save a file: path for use with ACTION_VIEW intents
-            Log.d("UPLOADIMAGE","image of actuall name $absolutePath")
-            Log.d("UPLOADIMAGE","image of cannon name $canonicalPath")
-            Log.d("UPLOADIMAGE","image of p name $path")
+            Log.d("UPLOADIMAGE", "image of actuall name $absolutePath")
+            Log.d("UPLOADIMAGE", "image of cannon name $canonicalPath")
+            Log.d("UPLOADIMAGE", "image of p name $path")
             currentPhotoPath = absolutePath
             currentPhotoFilename = absolutePath.substringAfterLast("/").substringBeforeLast(".")
-            Log.d("UPLOADIMAGE","image of pcurrent name $currentPhotoFilename")
+            Log.d("UPLOADIMAGE", "image of pcurrent name $currentPhotoFilename")
 
         }
     }
@@ -335,32 +343,53 @@ class MainActivity : AppCompatActivity() {
         val descString = findViewById<TextView>(R.id.DescriptionField).text.toString()
         val numbOfClaims = sharedPref.getInt("numberOfClaims", 0)
         val imageBytes = if(currentPhotoPath!="")File(currentPhotoPath).readBytes() else null
-        val imageString: String = if(currentPhotoPath!="") android.util.Base64.encodeToString(imageBytes,android.util.Base64.URL_SAFE) else ""
+        val imageString: String = if(currentPhotoPath!="") android.util.Base64.encodeToString(
+            imageBytes,
+            android.util.Base64.URL_SAFE
+        ) else ""
 
         //Legger inn nye verdier
-        Log.d("ADD_CLAIM_ERROR?", "Now putting in addition of  numclam$numbOfClaims desc$descString pname$photoName lat$latString long$longString imString${if(imageString.length>6) imageString.substring(0,5) else "nothing"}")
-        dataRepository.addClaim(numbOfClaims,Claim(numbOfClaims.toString(), descString, photoName,"$latString-$longString","0"),imageString)
+        Log.d(
+            "ADD_CLAIM_ERROR?",
+            "Now putting in addition of  numclam$numbOfClaims desc$descString pname$photoName lat$latString long$longString imString${
+                if (imageString.length > 6) imageString.substring(
+                    0,
+                    5
+                ) else "nothing"
+            }"
+        )
+        dataRepository.addClaim(
+            numbOfClaims, Claim(
+                numbOfClaims.toString(),
+                descString,
+                photoName,
+                "$latString-$longString",
+                "0"
+            ), imageString
+        )
         //dataRepository.insertClaimIntoSharedPreferences(numbOfClaims, descString, longString, latString, photoName,sharedPref)
         //dataRepository.sendClaimToServer(numbOfClaims, descString, longString, latString, photoName)
-        Toast.makeText(this, "New claim added", Toast.LENGTH_SHORT).show()
+        Snackbar.make(view, "New claim added.", Snackbar.LENGTH_LONG).show()
+       //Toast.makeText(this, "New claim added", Toast.LENGTH_SHORT).show()
         Navigation.findNavController(view).popBackStack()
     }
     /** Claim form functions end*/
 
     /** settings functions*/
-    @Suppress("UNUSED_PARAMETER")
     fun changePassword(view: View){
         Log.d("ADD_CLAIM", "this claim add has started")
         val password: String = findViewById<TextView>(R.id.editNewPassword).text.toString()
         val passHash = passwordToHashMD5(password)
-        val changePasswordCallBack = { success: Boolean,failReason: String ->
+        val changePasswordCallBack = { success: Boolean, failReason: String ->
             if(success) {
-                Toast.makeText(this,"password is updated", Toast.LENGTH_SHORT).show()
+                Snackbar.make(view, "Password is updated.", Snackbar.LENGTH_LONG).show()
+                //Toast.makeText(this, "password is updated", Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(this,"login failed due to $failReason", Toast.LENGTH_SHORT).show()
+                Snackbar.make(view, "Login failed due to $failReason", Snackbar.LENGTH_LONG).show()
+                //Toast.makeText(this, "login failed due to $failReason", Toast.LENGTH_SHORT).show()
             }
         }
-        dataRepository.changePassword(password,passHash,changePasswordCallBack)
+        dataRepository.changePassword(password, passHash, changePasswordCallBack)
     }
 
     /** settings functions end*/
