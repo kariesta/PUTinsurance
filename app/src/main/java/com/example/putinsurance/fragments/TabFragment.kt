@@ -66,6 +66,8 @@ class TabFragment : Fragment() {
         viewPager2 = view.findViewById(R.id.view_pager)
         viewPager2.adapter = sectionsStateAdapter
 
+        //sectionsStateAdapter.notifyDataSetChanged()
+
         // Finding tab layout
         // Got a findViewById(R.id.tabs) must not be null. Is there a race condition somewhere??
         val tabs: TabLayout = view.findViewById(R.id.tabs)
@@ -78,6 +80,10 @@ class TabFragment : Fragment() {
             viewPager2.setCurrentItem(tab.position, true)
             Log.d("Map - tablayoutmediator", "position is $position")
         }.attach()
+
+
+
+        //viewPager2.currentItem = numOfTabs - 1
 
     }
 
