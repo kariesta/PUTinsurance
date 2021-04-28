@@ -34,7 +34,7 @@ import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
-    val MAX_CLAIMS = 5
+    private val MAX_CLAIMS = 5
     private val REQUEST_IMAGE_CAPTURE = 1
     private var currentPhotoPath: String  = ""
     private lateinit var sharedPref: SharedPreferences
@@ -198,7 +198,6 @@ class MainActivity : AppCompatActivity() {
     // TODO: check if SINGLETON of shared preferences and queue is recommended
     fun logIn(view: View) {
         // Shared Preferences
-
         val emailText =  findViewById<TextView>(R.id.editTextTextEmailAddress).text.toString()
         val passwordHash = passwordToHashMD5(findViewById<TextView>(R.id.editTextTextPassword).text.toString())
         val loginCallBack =  { valid: Boolean,failReason: String ->
@@ -237,7 +236,7 @@ class MainActivity : AppCompatActivity() {
 
     /**Tab functions*/
     fun newClaim(view: View) {
-        val numbOfClaims = sharedPref.getInt("numberOfClaims",0)
+        val numbOfClaims = dataRepository.getNumberOfClaims()
         if (numbOfClaims >= MAX_CLAIMS) {
             Toast.makeText(this,"claim limit reached", Toast.LENGTH_SHORT).show()
             return
@@ -288,7 +287,7 @@ class MainActivity : AppCompatActivity() {
             takePictureIntent.resolveActivity(packageManager)?.also {
                 // Create the File where the photo should go
                 val photoFile: File? = try {
-                    val nextClaimNumber = sharedPref.getInt("numberOfClaims",0)
+                    val nextClaimNumber = dataRepository.getNumberOfClaims()
                     createImageFile(nextClaimNumber)
                 } catch (ex: IOException) {
                     // Error occurred while creating the File
@@ -359,10 +358,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
         dataRepository.changePassword(password,passHash,changePasswordCallBack)
-    }
-
-    fun sendIndex(int: Int?) {
-
     }
 
     /** settings functions end*/

@@ -7,31 +7,61 @@
         android:id="@+id/fragmentTab">
 
     <TextView
-            android:text="ID"
+            android:text="Claim ID"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/fab_margin"
-            android:id="@+id/claimIdField"
+            android:id="@+id/claimIdText"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+            android:text="IDTEXT"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/claimIdField"
+            android:textColor="@color/colorOnPrimary"
+            android:layout_margin="@dimen/fab_margin"
+            app:layout_constraintTop_toBottomOf="@+id/claimIdText"
+            app:layout_constraintStart_toStartOf="parent"
+            android:textSize="18sp" />
+
+    <Button
+            android:text="Edit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/editClaimButton"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:textColor="@color/colorError"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/claimIdText"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginStart="32dp"
+            app:layout_constraintHorizontal_bias="0.94" />
 
     <TextView
             android:text="Location"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/fab_margin"
-            android:id="@+id/textView6"
+            android:id="@+id/claimLocText"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/claimIdField" />
 
-    <TextView
+    <EditText
             android:text="LOCATIONTEXT"
             android:layout_width="wrap_content"
-            android:layout_height="15dp"
+            android:layout_height="wrap_content"
             android:layout_margin="@dimen/fab_margin"
+            android:background="@null"
+            android:inputType="none"
+            android:enabled="false"
+            android:hint="Lat-Lng"
+            android:textColor="@color/colorOnPrimary"
             android:id="@+id/claimLocField"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textView6" />
+            app:layout_constraintTop_toBottomOf="@+id/claimLocText"
+            android:importantForAutofill="no" />
 
     <TextView
             android:text="Description"
@@ -42,48 +72,19 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/claimLocField" />
 
-    <TextView
+    <EditText
             android:text="DESCRIPTIONTEXT"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/fab_margin"
+            android:textColor="@color/colorOnPrimary"
+            android:background="@null"
+            android:inputType="none"
+            android:enabled="false"
+            android:hint="Insert description of accident here."
             android:id="@+id/claimDesField"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textView9" />
-
-    <!-- Just testing -->
-
-    <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="textPersonName"
-            android:text="Name"
-            android:layout_margin="@dimen/fab_margin"
-            android:visibility="invisible"
-            android:id="@+id/editTextTextPersonName"
-            app:layout_constraintTop_toBottomOf="@+id/textView9"
-            app:layout_constraintStart_toStartOf="parent" />
-
-
-    <!-- <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_weight="3"
-            android:id="@+id/frameLayout"
-            android:layout_height="match_parent" >
-
-        &lt;!&ndash; https://stackoverflow.com/questions/9557833/replace-part-of-screen-content-by-using-fragments &ndash;&gt;
-
-
-        <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:foregroundGravity="fill"
-                tools:srcCompat="@tools:sample/backgrounds/scenic"
-                android:id="@+id/imageView" />
-
-
-    </FrameLayout>
--->
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

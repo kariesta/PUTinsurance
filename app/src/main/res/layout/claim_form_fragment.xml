@@ -40,7 +40,7 @@
         <EditText
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:inputType="textPersonName"
+                android:inputType="number"
                 android:text="@string/Latitude"
                 android:ems="10"
                 android:id="@+id/LatitudeField"
@@ -65,12 +65,12 @@
         <EditText
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:inputType="textPersonName"
+                android:inputType="number"
                 android:text="@string/Longitude"
                 android:ems="10"
                 android:id="@+id/LongitudeField"
-                android:importantForAutofill="no"
-                android:labelFor="@id/LongitudeField" />
+                android:labelFor="@id/LongitudeField"
+                android:importantForAutofill="no" />
 
     </LinearLayout>
 

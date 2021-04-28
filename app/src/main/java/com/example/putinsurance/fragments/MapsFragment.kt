@@ -20,6 +20,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import java.lang.Exception
 import java.lang.NumberFormatException
 
 class MapsFragment : Fragment() {
@@ -59,14 +60,14 @@ class MapsFragment : Fragment() {
 
         // IMPORTANT!! The scope of the viewmodel MUST be the same in the different fragments,
         // or else you will get a different viewmodel
-        val factory = InjectorUtils.provideTabViewModelFactory(this.requireActivity())
+        val factory = InjectorUtils.provideTabViewModelFactory(requireActivity())
         tabViewModel = ViewModelProvider(this.requireActivity(), factory).get(TabViewModel::class.java)
 
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
 
-        tabViewModel.claim.observe(viewLifecycleOwner, Observer<Claim> {
+        tabViewModel.location.observe(viewLifecycleOwner, Observer<String> {
             Log.d("Switch", "Observed change in index$it")
-            coordinates = it.claimLocation //"${it*10}-${it*15}"
+            coordinates = it //"${it*10}-${it*15}"
             mapFragment?.getMapAsync(callback)
         })
 
@@ -75,6 +76,7 @@ class MapsFragment : Fragment() {
 
     private fun setNewMarker(location : String, googleMap: GoogleMap) {
         // Splitting a string with same form as coordinates in shared preferences
+        Log.d("Map", "Setting new marker")
         val coordinates = location.split("-")
 
         try {
@@ -89,7 +91,7 @@ class MapsFragment : Fragment() {
             // Zoom in at a specific level
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pos, 5F))
 
-        } catch (e : NumberFormatException) {
+        } catch (e : Exception) {
             Log.d("Fetch", "Coordinates not valid")
         }
     }

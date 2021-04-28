@@ -7,6 +7,8 @@ import android.graphics.BitmapFactory
 import android.util.Base64
 import android.util.Log
 import com.android.volley.DefaultRetryPolicy
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonObjectRequest
@@ -200,14 +202,14 @@ class DataRepository private constructor(
     }
 
     //get number of claims
-    fun getNumberOfClaims(): Int{
+    fun getNumberOfClaims(): Int {
         return preferences.getInt("numberOfClaims", 0)
     }
 
     //get each claimField by id/get all claimfields for one id
-    fun getClaimDataFromSharedPrefrences(id: Int): Claim {
+    fun getClaimDataFromSharedPrefrences(id: Int): MutableLiveData<Claim> {
         @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
-        return Claim(
+        return MutableLiveData(Claim(
             preferences.getString("claimID$id", ""),
             preferences.getString(
                 "claimDes$id",
@@ -216,7 +218,7 @@ class DataRepository private constructor(
             preferences.getString("claimPhoto$id", ""),
             preferences.getString("claimLocation$id", "-"),
             preferences.getString("claimStatus$id", "")
-        )
+        ))
     }
 
     //get all claims

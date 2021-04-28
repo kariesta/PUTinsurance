@@ -6,7 +6,7 @@
 
     <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="40dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
@@ -30,7 +30,6 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintVertical_bias="0.0"
                     android:onClick="goToSettings"
                     android:background="#64B5F6"
                     android:padding="8dp" />
@@ -42,7 +41,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:layout_marginTop="?attr/actionBarSize">
+            android:layout_marginTop="40dp">
 
         <!--                android:layout_weight="1"-->
         <androidx.viewpager2.widget.ViewPager2
@@ -52,36 +51,17 @@
                 android:layout_height="wrap_content"
                 app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
+
+        <androidx.appcompat.widget.SwitchCompat
+                android:text="Map"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_margin="@dimen/fab_margin"
-                android:layout_weight="1">
-
-            <androidx.appcompat.widget.SwitchCompat
-                    android:text="Map"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/mySwitch"
-                    android:layoutDirection="rtl"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent" />
-
-            <Button
-                    android:text="Edit"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/button2"
-                    android:minHeight="0dp"
-                    android:minWidth="0dp"
-                    style="@style/Widget.AppCompat.Button.Borderless"
-                    android:textColor="@color/colorError"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                android:id="@+id/mySwitch"
+                android:layoutDirection="rtl"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
 
 
 
@@ -103,12 +83,6 @@
                     android:layout_height="match_parent"
                     android:id="@+id/fragment_container_view" />-->
         </FrameLayout>
-
-
-
-
-
-
 
     </LinearLayout>
 

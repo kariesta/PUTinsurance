@@ -13,56 +13,39 @@ import com.example.putinsurance.data.DataRepository
 class TabViewModel(private val dataRepository: DataRepository): ViewModel() {
 
     // variables
-    var index : MutableLiveData<Int> = MutableLiveData()
-    //var location : MutableLiveData<String> = MutableLiveData()
+    //var index : MutableLiveData<Int> = MutableLiveData()
 
     // for Kari. Observe this variable
     var photo : MutableLiveData<Bitmap> = MutableLiveData()
+    var location = MutableLiveData<String>()
 
-    var claim : MutableLiveData<Claim> = MutableLiveData()
+    fun getNumOfTabs() =
+        dataRepository.getNumberOfClaims()
 
-    // unsure of how to
-    var allClaims : MutableLiveData<MutableList<Claim>> = MutableLiveData()
+    fun getClaim(position: Int) =
+        dataRepository.getClaimDataFromSharedPrefrences(position - 1)
 
-
-
-    // THE MISTAKE: I created a new MutableLiveData object instead of just updating the value
-    // BEWARE
-    fun setTab(tab: Int, maxTab : Int) {
-        Log.d("Fetch", "setIndex($tab)")
-
-        // dataRepository.getNumberOfClaims()
-        //val tabs = 5
-        val id = maxTab - tab - 1
-
-        claim.value = dataRepository.getClaimDataFromSharedPrefrences(id)
-        index.value = id
-
-        /*// Updating location
-        location.value = getLocation(id)*/
-
-        // for Kari
-        // Updating photo
-        photo.value = getPhoto(id)
-        Log.d("SHOW_IMAGE", "photo.value now: ${photo.value}")
+    fun updateClaim(claim: Claim, imageString : String) {
+        dataRepository.updateClaim(claim, imageString)
+        notifyChanged(claim)
     }
 
-    fun addClaim() {
-        // use notifyDataSetChanged
+    fun setTab(position: Int) {
+        Log.d("Fetch", "setIndex($position)")
+
+        dataRepository
+            .getClaimDataFromSharedPrefrences(position)
+            .value?.let { notifyChanged(it) }
     }
 
-    /*private fun getLocation(id : Int) : String {
-        val claim = dataRepository.getClaimDataFromSharedPrefrences(id)
-        return claim.claimLocation
-    }*/
+    private fun notifyChanged(claim: Claim) {
+        if (claim.claimLocation != location.value)
+            location.value = claim.claimLocation
 
-    private fun getPhoto(id: Int) : Bitmap? {
-        /*var image = dataRepository.getClaimImageFromPreferences(id)
-        if (image == null){
-            dataRepository.getClaimImageFromServer(id)
-            image = dataRepository.getClaimImageFromPreferences(id)
-        }*/
-        return dataRepository.getClaimImageFromPreferences(id)
+        photo.value = dataRepository.getClaimImageFromPreferences(claim.claimID.toInt())
     }
+
+
+    /*private fun getPhoto(id : Int) : Bitmap? = null*/
 
 }
