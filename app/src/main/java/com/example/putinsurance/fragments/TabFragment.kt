@@ -43,7 +43,6 @@ class TabFragment : Fragment() {
         // TODO: check what context should be used
         val factory = InjectorUtils.provideTabViewModelFactory(this.requireActivity())
         tabViewModel = ViewModelProvider(this.requireActivity(), factory).get(TabViewModel::class.java)
-
         // Adapter
         val numOfTabs = tabViewModel.getNumOfTabs()
 
@@ -76,7 +75,7 @@ class TabFragment : Fragment() {
         // Need to do this instead:</LinearLayout>
         TabLayoutMediator(tabs, viewPager2) { tab, position ->
             tab.text = tabTitles[position].toString()
-            viewPager2.setCurrentItem(numOfTabs - tab.position, true)
+            viewPager2.setCurrentItem(tab.position, true)
             Log.d("Map - tablayoutmediator", "position is $position")
         }.attach()
 
