@@ -125,12 +125,12 @@ class DataRepository private constructor(
                 callback(false, "failed to connect to server")
 
             })
-        jsonRequest.retryPolicy =
+        /*jsonRequest.retryPolicy =
             DefaultRetryPolicy(
                 5000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
-            )
+            )*/
 
         queue?.add(jsonRequest)
     }
@@ -268,12 +268,12 @@ class DataRepository private constructor(
                 // TODO: check if due to incorrect password or no contact with server (network/server down)
                 Log.d("GET_CLAIMS", "SERVER: FAILED DUE TO: ${it.message}")
             })
-        jsonRequest.retryPolicy =
+        /*jsonRequest.retryPolicy =
             DefaultRetryPolicy(
                 5000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
-            )
+            )*/
 
         queue?.add(jsonRequest)
     }
@@ -357,12 +357,12 @@ class DataRepository private constructor(
                 // TODO: check if due to incorrect password or no contact with server (network/server down)
                 Log.d("GET_IMAGE", "SERVER: FAILED DUE TO: ${it.message}")
             })
-        stringRequest.retryPolicy =
+        /*stringRequest.retryPolicy =
             DefaultRetryPolicy(
                 5000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
-            )
+            )*/
         queue?.add(stringRequest)
     }
 
@@ -490,12 +490,12 @@ class DataRepository private constructor(
                 //handle error if network low.
             }
         )
-        stringRequest.retryPolicy =
+        /*stringRequest.retryPolicy =
             DefaultRetryPolicy(
                 5000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
-            )
+            )*/
         stringRequest.tag = SENDDESPITELOGOUT
         queue?.add(stringRequest)
     }
@@ -522,12 +522,12 @@ class DataRepository private constructor(
                 //handle error if network low.
             }
         )
-        stringRequest.retryPolicy =
+        /*stringRequest.retryPolicy =
             DefaultRetryPolicy(
                 5000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
-            )
+            )*/
         stringRequest.tag = SENDDESPITELOGOUT
         queue?.add(stringRequest)
     }
@@ -584,12 +584,12 @@ class DataRepository private constructor(
                 //handle error if network low.
             }
         )
-        stringRequest.retryPolicy =
+        /*stringRequest.retryPolicy =
             DefaultRetryPolicy(
                 5000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
-            )
+            )*/
         queue?.add(stringRequest)
     }
 
@@ -619,6 +619,7 @@ class DataRepository private constructor(
                 if(url != null){
                     addImageToServer(url)
                 }
+                i++
             }
             //updateClaimInServer(url)
         } else {

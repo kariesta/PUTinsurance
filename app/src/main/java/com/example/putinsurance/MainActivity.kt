@@ -67,6 +67,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onResume() {
+        Log.d("RESUME_UPDATE","UPDATERING0")
         super.onResume()
         Log.d("RESUME_UPDATE","UPDATERING")
         if(dataRepository.getUserId()!=null){
