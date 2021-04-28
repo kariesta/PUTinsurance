@@ -2,38 +2,49 @@ package com.example.putinsurance.data
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.os.Environment
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Base64
 import android.util.Log
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import org.json.JSONObject
-import java.io.File
+import java.net.InetAddress
 
 
-class DataRepository private constructor(private val context: Context, private  val preferences: SharedPreferences ) {
+class DataRepository private constructor(
+    private val context: Context,
+    private val preferences: SharedPreferences
+) {
 
     companion object {
         @Volatile private var instance: DataRepository? = null
         const val WIFI = "Wi-Fi"
         const val ANY = "Any"
         var isConnected = false
+        var serverDown = false
+        private val ip = "10.0.2.2"
+        private val port = "8080"
+        private val urlBase = "http://$ip:$port/"
 
-        fun getInstance(context: Context, preferences: SharedPreferences) = instance ?: synchronized(this) {
+        fun getInstance(context: Context, preferences: SharedPreferences) = instance ?: synchronized(
+            this
+        ) {
             instance?: DataRepository(context, preferences).also { instance = it}
         }
     }
 
-    private val ip = "10.0.2.2"
-    private val port = "8080"
-    private val urlBase = "http://$ip:$port/"
     private var queue : RequestQueue? =  Volley.newRequestQueue(context)
-    private var offlineRequests: MutableList<() -> Unit> = mutableListOf()
+    private var offlineGetRequests: MutableList<() -> Unit> = mutableListOf()
+    private var offlinePostRequests: MutableList<String> = mutableListOf()
+
     private val SENDDESPITELOGOUT = "SEND_DESPITE_LOGOUT"
+    private var sendImage = false //when photonames are changed either send to server, or request from server.
 
     //todo value to store weither we are synced with server.
     private var syncedWithServer = false
@@ -42,15 +53,16 @@ class DataRepository private constructor(private val context: Context, private  
     fun userValidation(
         email: String,
         passHash: String,
-        callback: (Boolean,String) -> Any
+        callback: (Boolean, String) -> Any
     ) {
         try {
-            validateUserBySharedPreferences(email, passHash,callback)
+            validateUserBySharedPreferences(email, passHash, callback)
         } catch (e: NullPointerException) {
+            checkServer()
             if(isConnected){
                 validateUserByServer(email, passHash, callback)
             }else{
-                callback(false,"offline device")
+                callback(false, "offline device")
             }
         }
     }
@@ -63,7 +75,7 @@ class DataRepository private constructor(private val context: Context, private  
     private fun validateUserBySharedPreferences(
         email: String,
         passHash: String,
-        callback: (Boolean,String) -> Any
+        callback: (Boolean, String) -> Any
     ) {
 
         val em = preferences.getString("email", null)
@@ -71,10 +83,10 @@ class DataRepository private constructor(private val context: Context, private  
 
         if (em!! == email && ph!! == passHash) {
             Log.d("logIn", "SHARED PREFS: SUCCESS. SEND TO NEXT ACTIVITY")
-            callback(true,"")
+            callback(true, "")
         } else {
             Log.d("logIn", "SHARED PREFS: FAIL. EMAIL/PASSWORD IS INCORRECT")
-            callback(false,"email/password is incorrect")
+            callback(false, "email/password is incorrect")
         }
     }
 
@@ -106,18 +118,26 @@ class DataRepository private constructor(private val context: Context, private  
                 // Updating shared preferences
                 insertIntoSharedPreferences(email, passHash, personID)
 
-                Log.d("logIn", "SERVER: SUCCESS. SEND TO NEXT ACTIVITY (email: $email and passHash: $passHash)")
+                Log.d(
+                    "logIn",
+                    "SERVER: SUCCESS. SEND TO NEXT ACTIVITY (email: $email and passHash: $passHash)"
+                )
                 callback(true, "")
                 //startActivity(context,Intent(context, TabActivity::class.java), null)
             },
             {
-
                 // TODO: check if due to incorrect password or no contact with server (network/server down)
                 Log.d("logIn", "SERVER: FAILED TO CONNECT")
                 callback(false, "failed to connect to server")
-
+                serverDown = true
+                isConnected = false
             })
-
+        /*jsonRequest.retryPolicy =
+            DefaultRetryPolicy(
+                5000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+            )*/
 
         queue?.add(jsonRequest)
     }
@@ -137,22 +157,24 @@ class DataRepository private constructor(private val context: Context, private  
 
     }
 
-    //delete all data on logout
+    //delete all data on logout, except from unsendt updates.
     fun deleteFromSharedPreferences() {
-        //TODO register that if there is still data left, it should be kept and sendt later
+        var oldUpdates = offlinePostRequests
+        val pastUpdates = preferences.getStringSet("pastUsersCalls",null)
+        if (pastUpdates!=null){
+            oldUpdates.addAll(pastUpdates)
+        }
+
         preferences.edit().apply {
-            remove("email")
-            remove("passHash")
-            remove("personID")
-            //val numbOfClaims = preferences.getInt("numberOfClaims",0)
             clear()
+            putStringSet("pastUsersCalls", oldUpdates.toSet())
             apply()
         }
     }
 
-    fun changePassword(password: String, passHash: String, callback: (Boolean,String) -> Unit) {
+    fun changePassword(password: String, passHash: String, callback: (Boolean, String) -> Unit) {
 
-        if(isConnected){
+        if(!isConnected){
             callback(false, "offline device")
         }
 
@@ -170,47 +192,46 @@ class DataRepository private constructor(private val context: Context, private  
             { _ ->
                 // Updating shared preferences
                 insertIntoSharedPreferences(email, passHash, personID)
-                callback(true,"")
-                Log.d("changePass", "SERVER: SUCCESS. now (email: $email, password:$password and passHash: $passHash)")
+                callback(true, "")
+                Log.d(
+                    "changePass",
+                    "SERVER: SUCCESS. now (email: $email, password:$password and passHash: $passHash)"
+                )
             },
             {
                 callback(false, "failed to connect ot server")
                 Log.d("changePass", "SERVER: FAILED TO CONNECT")
+                serverDown = true
+                isConnected = false
             })
-
         queue?.add(stringRequest)
-        return
-
     }
 
     //get number of claims
-    fun getNumberOfClaims() : Int {
-        return preferences.getInt("numberOfClaims",0)
+    fun getNumberOfClaims(): Int {
+        return preferences.getInt("numberOfClaims", 0)
     }
-
-    //get number of claims
-   /* fun getNumberOfClaims(): MutableLiveData<Int> {
-        return MutableLiveData(preferences.getInt("numberOfClaims",0))
-    }*/
 
     //get each claimField by id/get all claimfields for one id
     fun getClaimDataFromSharedPrefrences(id: Int): MutableLiveData<Claim> {
         @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
-        return MutableLiveData(Claim(
-            preferences.getString("claimID$id", ""),
-            preferences.getString(
-                "claimDes$id",
-                ""
-            ),
-            preferences.getString("claimPhoto$id", ""),
-            preferences.getString("claimLocation$id", "-"),
-            preferences.getString("claimStatus$id", "")
-        ))
+        return MutableLiveData(
+            Claim(
+                preferences.getString("claimID$id", ""),
+                preferences.getString(
+                    "claimDes$id",
+                    ""
+                ),
+                preferences.getString("claimPhoto$id", ""),
+                preferences.getString("claimLocation$id", "-"),
+                preferences.getString("claimStatus$id", "")
+            )
+        )
     }
 
     //get all claims
-    fun getAllClaims(): MutableList<Claim>{
-        val numbOfClaims = preferences.getInt("numberOfClaims",0)
+    fun getAllClaimsFromSharedPrefrences(): MutableList<Claim>{
+        val numbOfClaims = preferences.getInt("numberOfClaims", 0)
         //Log.d("SHAREDPREF","this is now full of $numbOfClaims claims")
 
         if (numbOfClaims == 0){
@@ -231,18 +252,17 @@ class DataRepository private constructor(private val context: Context, private  
 
     //takes a call back method that adds the values to shared preference.
     //TODO WHAT IF NEW CLAIM IS MADE OR EDITED BEFORE FETCHED CLAIM FROM SERVER? A status number to compare versions? a conflicting claims activity?
-    fun getAllClaimsFromServer(){
+    fun getAllClaimsFromServer(essensial: Boolean){
         //send the request
         val personId = getUserId()
         val parameters =  "id=$personId"
         val url = "${urlBase}getMethodMyClaims?$parameters"
         if(isConnected){
             sendMyClaimsRequest(url)
-            getAllImages()
-        } else {
-            offlineRequests.add{
+        } else if (essensial) {
+            offlineGetRequests.add{
+                Log.d("OFFLINEACT", "NOW getAllClaimsFromServer $url")
                 sendMyClaimsRequest(url)
-                getAllImages()
             }
         }
     }
@@ -257,49 +277,135 @@ class DataRepository private constructor(private val context: Context, private  
             {
                 // TODO: check if due to incorrect password or no contact with server (network/server down)
                 Log.d("GET_CLAIMS", "SERVER: FAILED DUE TO: ${it.message}")
+                serverDown = true
+                isConnected = false
+                //not adding to offlinerequests to avoid many similar requests
             })
+        jsonRequest.retryPolicy =
+            DefaultRetryPolicy(
+                5000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+            )
 
         queue?.add(jsonRequest)
     }
 
-    private fun getAllImages(){
-        //for alle bilder
-        for(i in 0..preferences.getInt("numberOfClaims", 0)){
-            val photoname = preferences.getString("claimPhoto$i", null)
-            if (photoname != null){  //TODO check for existing files:  && noFiles(photoname)){
-                val url = "${urlBase}getMethodDownloadPhoto?$photoname"
-                val stringRequest = StringRequest(
-                    Request.Method.GET, url,
-                    { response ->
-                        Log.d("GET_IMAGE", "SERVER: SUCCESS. ServerClaims put in sharedpref")
-                        //create file
-                        createPhotoFile(photoname,response)
-                    },
-                    {
-                        // TODO: check if due to incorrect password or no contact with server (network/server down)
-                        Log.d("GET_IMAGE", "SERVER: FAILED DUE TO: ${it.message}")
-                    })
-                queue?.add(stringRequest)
+    fun updateImage(claimId: Int){
+        if(sendImage){
+            val photoname = preferences.getString("claimPhoto$claimId", null)
+            val pId = getUserId()
+            val imageString = preferences.getString(photoname, null)
+            val claimToUpdate = getClaimDataFromSharedPrefrences(claimId)
+            if (pId!=null && imageString!=null){
+                val parameters = "userId=$pId&claimId=${claimToUpdate.value?.claimID}&fileName=${claimToUpdate.value?.claimPhoto}&imageStringBase64=${imageString}"
+                val url = "http://$ip:$port/postMethodUploadPhoto?$parameters"
+                preferences.edit().apply { putString("updateClaim${claimId}Photo", url); commit()}
+                if (isConnected) {
+                    Log.d(
+                        "UPDATE_IMAGE",
+                        "now adding image for $claimId with strings ${imageString.length}"
+                    )
+                    addImageToServer(url)
+                } else {
+                    Log.d(
+                        "UPDATE_IMAGE",
+                        "LATER adding image for $claimId with strings ${imageString.length}"
+                    )
+                    offlinePostRequests.add(url)/* {
+                        Log.d("OFFLINEACT", "NOW addImageToServer$pId")
+                        addImageToServer(url)
+                    }*/
+                }
+            }
+            else{
+                Log.d("UPDATE_IMAGE", "not done because of pid:$pId or imageString:$imageString")
+            }
+        } else {
+            if (isConnected) {
+                Log.d("UPDATE_IMAGE", "now fetching  image for $claimId from server")
+                getClaimImageFromServer(claimId)
+            } else {
+                Log.d("UPDATE_IMAGE", "LATER fetching  image for $claimId from server")
+                offlineGetRequests.add {
+                    Log.d("OFFLINEACT", "NOW getClaimImageFromServer$claimId")
+                    getClaimImageFromServer(claimId)
+                }
             }
         }
     }
 
-    /*private fun noFiles(photoName: String): Boolean {
-        return true //se etter filer i gallery
-        val storageDir: File = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-    }*/
-
-    private fun createPhotoFile(photoName: String, response: String){
-        //lag bildefil og skriv response
-        // Create an image file name
-        val storageDir: File = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        File.createTempFile(
-            photoName, /* prefix */
-            ".jpg", /* suffix */
-            storageDir /* directory */
-        ).apply {
-            //TODO les inn i filen
+    fun getClaimImageFromServer(claimId: Int) {
+        val photoname = preferences.getString("claimPhoto$claimId", null)
+        if (photoname != null) {  //TODO check for existing files:  && noFiles(photoname)){
+            val url = "${urlBase}getMethodDownloadPhoto?fileName=$photoname"
+            if (isConnected) {
+                sendGetImageRequest(url, photoname)
+            } else {
+                offlineGetRequests.add {
+                    Log.d("OFFLINEACT", "NOW sendGetImageRequest $url  $photoname")
+                    sendGetImageRequest(url, photoname)
+                }
+            }
         }
+    }
+
+    private fun sendGetImageRequest(url: String, photoname: String) {
+        val stringRequest = StringRequest(
+            Request.Method.GET, url,
+            { response ->
+                Log.d("GET_IMAGE", "SERVER: SUCCESS. Server image put in sharedpref")
+                preferences.edit().apply { putString("$photoname", response);commit() }
+                Log.d(
+                    "GET_IMAGE", "image $photoname now: ${
+                        if (response.length > 10) response.substring(
+                            0,
+                            10
+                        ) else "null"
+                    }, see: ${preferences.getString(photoname, null)}"
+                )
+
+            },
+            {
+                // TODO: check if due to incorrect password or no contact with server (network/server down)
+                Log.d("GET_IMAGE", "SERVER: FAILED DUE TO: ${it.message}")
+                serverDown = true
+                isConnected = false
+                offlineGetRequests.add {
+                    Log.d("OFFLINEACT", "NOW sendGetImageRequest $url  $photoname")
+                    sendGetImageRequest(url, photoname)
+                }
+            })
+        stringRequest.retryPolicy =
+            DefaultRetryPolicy(
+                5000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+            )
+        queue?.add(stringRequest)
+    }
+
+    fun getClaimImageFromPreferences(claimId: Int): Bitmap?{
+        //if no photoname return null
+        val photoname = preferences.getString("claimPhoto$claimId", null)
+        // ?: return Log.d("GET_IMAGE_FAIL","no image for claimPhoto$claimId")
+        if(photoname==null){
+            Log.d("GET_IMAGE_FAIL", "no image for claimPhoto$claimId")
+            return null
+        }
+        Log.d("Get_Image", "photoname in sharedPref $photoname")
+        //find the file and return as a bitmap
+        /*val storageDir: File = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        val photopath = storageDir.absolutePath+"/"+photoname
+        return BitmapFactory.decodeFile(photopath)*/
+        val photoString = preferences.getString(photoname, null)//?: return null
+        if(photoString==null){
+            Log.d("GET_IMAGE_FAIL", "no image for $photoname")
+            return null
+        }
+        val decodedString: ByteArray = Base64.decode(photoString, Base64.URL_SAFE)
+        return BitmapFactory.decodeByteArray(decodedString, 0, decodedString.size)//Bitmap.Config.ARGB_8888)
+        //return BitmapFactory.decodeByteArray(photoString.toByteArray(),0,photoString.length)
     }
 
     private fun insertServerClaimsIntoSharedPref(
@@ -313,6 +419,7 @@ class DataRepository private constructor(private val context: Context, private  
             for (i in 0 until numOfClaims) {
                 putString("claimID$i", i.toString())
                 putString("claimDes$i", serverClaimsResponse.getJSONArray("claimDes")[i].toString())
+                sendImage = false
                 putString(
                     "claimPhoto$i",
                     serverClaimsResponse.getJSONArray("claimPhoto")[i].toString()
@@ -323,6 +430,9 @@ class DataRepository private constructor(private val context: Context, private  
                 )
             }
             apply()
+            Log.d("GETCLAMS", "photo now ${preferences.getString("claimPhoto0", null)}")
+            Log.d("GETCLAMS", "photo now ${preferences.getString("claimPhoto1", null)}")
+            Log.d("GETCLAMS", "photo now ${preferences.getString("claimPhoto2", null)}")
         }
         Log.d("GET_CLAIMS", "SERVER response put into shared preferences: ${serverClaimsResponse}")
     }
@@ -334,20 +444,30 @@ class DataRepository private constructor(private val context: Context, private  
         claim: Claim,
         imageString: String?
     ){
+        Log.d(
+            "ADD_CLAIM_ERROR?",
+            "Now putting in said imstring for numclam$numbOfClaims clam$claim with imString${
+                if (imageString != null && imageString.length > 6) imageString.substring(
+                    0,
+                    5
+                ) else "nothing"
+            }"
+        )
+        preferences.edit().apply(){ putString(claim.claimPhoto, imageString);commit()}
         insertClaimIntoSharedPreferences(numbOfClaims, claim)
         val personID = preferences.getString("personID", "na")
+        val parameters = "userId=$personID&indexUpdateClaim=${claim.claimID}&newClaimDes=${claim.claimDes}&newClaimPho=${claim.claimPhoto}&newClaimLoc=${claim.claimLocation}&newClaimSta=0"
+        val url = "http://$ip:$port/postInsertNewClaim?$parameters"
+        preferences.edit().apply { putString("addClaim${claim.claimID}Content", url); commit()}
         if(isConnected){
             Log.d("HANDLE_OFFLINE", "make request now!")
-            addClaimToServer(claim, personID)
-            if (imageString != null){
-                addImageToServer(claim, personID, imageString)
-            }
+            addClaimToServer(url)
         } else {
             Log.d("HANDLE_OFFLINE", "make request later!")
-            offlineRequests.add { addClaimToServer(claim, personID) }
-            if (imageString != null){
-                offlineRequests.add { addImageToServer(claim, personID, imageString) }
-            }
+            offlinePostRequests.add(url) /*{
+                Log.d("OFFLINEACT", "NOW addClaimToServer $claim  $personID")
+                addClaimToServer(url)
+            }*/
         }
     }
 
@@ -355,26 +475,31 @@ class DataRepository private constructor(private val context: Context, private  
         numbOfClaims: Int,
         claim: Claim
     ){
+        Log.d("ADD_CLAIM_ERROR?", "Now putting numclam$numbOfClaims clam$claim in sharedPref")
         preferences.edit().apply{
             putInt("numberOfClaims", numbOfClaims + 1)
             putString("claimID$numbOfClaims", numbOfClaims.toString())
             putString("claimDes$numbOfClaims", claim.claimDes)
+            sendImage = true
             putString("claimPhoto$numbOfClaims", claim.claimPhoto)
             putString("claimLocation$numbOfClaims", claim.claimLocation)
-            apply()
+            commit()
         }
+        Log.d("ADD_CLAIM_ERROR?", "End putting to shared pref")
+
     }
 
-    private fun addClaimToServer(claim: Claim, personID: String){
+    private fun addClaimToServer(url: String){
         val status = "0"
         //public String postInsertNewClaim(@RequestParam String userId, @RequestParam String indexUpdateClaim, @RequestParam String newClaimDes, @RequestParam String newClaimPho, @RequestParam String newClaimLoc, @RequestParam String newClaimSta) {
-        val parameters = "userId=$personID&indexUpdateClaim=${claim.claimID}&newClaimDes=${claim.claimDes}&newClaimPho=${claim.claimPhoto}&newClaimLoc=${claim.claimLocation}&newClaimSta=$status"
-        val url = "http://$ip:$port/postInsertNewClaim?$parameters"
+        //val parameters = "userId=$personID&indexUpdateClaim=${claim.claimID}&newClaimDes=${claim.claimDes}&newClaimPho=${claim.claimPhoto}&newClaimLoc=${claim.claimLocation}&newClaimSta=$status"
+        //val url = "http://$ip:$port/postInsertNewClaim?$parameters"
+        Log.d("ADD_CLAIM_ERROR?", "sending to server with $url")
         val stringRequest = StringRequest(
             Request.Method.POST, url,
             { _ ->
                 //response to successful request
-                Log.d("ADD_CLAIM", "SERVER: SUCCESS, added ${claim.toString()}")
+                Log.d("ADD_CLAIM", "SERVER: SUCCESSF added a claim}")
             },
             //response to unsuccessful request
             { error ->
@@ -382,32 +507,72 @@ class DataRepository private constructor(private val context: Context, private  
                 Log.d("ADD_CLAIM", "SERVER: FAILED DUE TO ${error.message}")
                 //handle error if server down, note that not connected and put in que again? maybe some resting time.
                 //handle error if network low.
+                serverDown = true
+                isConnected = false
+                offlinePostRequests.add(url)
             }
         )
+        stringRequest.retryPolicy =
+            DefaultRetryPolicy(
+                5000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+            )
         stringRequest.tag = SENDDESPITELOGOUT
         queue?.add(stringRequest)
     }
 
     //	public String postMethodUploadPhoto(@RequestParam String userId, @RequestParam String claimId, @RequestParam String fileName, @RequestParam String imageStringBase64) {
-    private fun addImageToServer(claim: Claim, personID: String, imageString: String){
+    private fun addImageToServer(url: String){//claim: Claim, personID: String, imageString: String){
         //read it to stringbase64
-        queue = Volley.newRequestQueue(context)
-        val parameters = "userId=$personID&claimId=${claim.claimID}&fileName=${claim.claimPhoto}&imageStringBase64=${imageString}"
-        val url = "http://$ip:$port/postMethodUploadPhoto?$parameters"
+        //queue = Volley.newRequestQueue(context)
+        //val parameters = "userId=$personID&claimId=${claim.claimID}&fileName=${claim.claimPhoto}&imageStringBase64=${imageString}"
+        //val url = "http://$ip:$port/postMethodUploadPhoto?$parameters"
+        Log.d("UPDATE_IMAGE??", "now sending to $url")
         val stringRequest = StringRequest(
             Request.Method.POST, url,
             { _ ->
+                preferences.edit().apply {
+                    putString(
+                        "updateClaim${
+                            url.split("=")[2].substring(
+                                0,
+                                1
+                            )
+                        }Photo", url
+                    ); commit()
+                }
                 //response to successful request
-                Log.d("ADD_CLAIM", "SERVER: SUCCESS.$imageString")
+                Log.d("ADD_CLAIM", "SERVER: SUCCESS.")
             },
             //response to unsuccessful request
             { error ->
+                preferences.edit().apply {
+                    putString(
+                        "updateClaim${
+                            url.split("=")[2].substring(
+                                0,
+                                1
+                            )
+                        }Photo", url
+                    ); commit()
+                }
                 Log.d("ADD_CLAIM_IMAGE", "SERVER: FAILED TO CONNECT WITH $url")
                 Log.d("ADD_CLAIM_IMAGE", "SERVER: FAILED DUE TO ${error.message}")
+                //preferences.edit().apply { putString("updateClaim${claimId}Photo",url); commit()} //???
                 //handle error if server down, note that not connected and put in que again? maybe some resting time.
                 //handle error if network low.
+                serverDown = true
+                isConnected = false
+                offlinePostRequests.add(url)
             }
         )
+        stringRequest.retryPolicy =
+            DefaultRetryPolicy(
+                5000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+            )
         stringRequest.tag = SENDDESPITELOGOUT
         queue?.add(stringRequest)
     }
@@ -418,18 +583,18 @@ class DataRepository private constructor(private val context: Context, private  
     ){
         val status = updateClaimInSharedPreferences(claim)
         val personID = preferences.getString("personID", "na")
+        val parameters = "userId=$personID&indexUpdateClaim=${claim.claimID}&updateClaimDes=${claim.claimDes}&updateClaimPho=${claim.claimPhoto}&updateClaimLoc=${claim.claimPhoto}&updateClaimSta=${status}"
+        val url = "http://$ip:$port/postUpdateClaim?$parameters"
+        preferences.edit().apply { putString("updateClaim${claim.claimID}", url); commit()}
         if(isConnected){
             Log.d("HANDLE_OFFLINE", "make request now!")
-            updateClaimInServer(claim, status, personID)
-            if (imageString != null){
-                addImageToServer(claim, personID, imageString)
-            }
+            updateClaimInServer(url)
         } else {
             Log.d("HANDLE_OFFLINE", "make request later!")
-            offlineRequests.add { updateClaimInServer(claim, status, personID) }
-            if (imageString != null){
-                offlineRequests.add { addImageToServer(claim, personID, imageString) }
-            }
+            offlinePostRequests.add(url) /* {
+                Log.d("OFFLINEACT", "NOW updateClaimInServer $claim $status $personID")
+                updateClaimInServer(url)
+            }*/
         }
     }
 
@@ -437,6 +602,7 @@ class DataRepository private constructor(private val context: Context, private  
         val prevStatus = preferences.getString("claimStatus${claim.claimID}", "0").toInt()
         preferences.edit().apply{
             putString("claimDes${claim.claimID}", claim.claimDes)
+            sendImage = true
             putString("claimPhoto${claim.claimID}", claim.claimPhoto)
             putString("claimLocation${claim.claimID}", claim.claimLocation)
             putString("claimStatus${claim.claimID}", (prevStatus + 1).toString())
@@ -445,31 +611,110 @@ class DataRepository private constructor(private val context: Context, private  
         return prevStatus+1
     }
 
-    private fun updateClaimInServer(claim: Claim, status: Int, personID: String){
+    private fun updateClaimInServer(url: String){
         //public String postInsertNewClaim(@RequestParam String userId, @RequestParam String indexUpdateClaim, @RequestParam String newClaimDes, @RequestParam String newClaimPho, @RequestParam String newClaimLoc, @RequestParam String newClaimSta) {
-        val parameters = "userId=$personID&indexUpdateClaim=${claim.claimID}&newClaimDes=${claim.claimDes}&newClaimPho=${claim.claimPhoto}&newClaimLoc=${claim.claimPhoto}&newClaimSta=${status}"
-        val url = "http://$ip:$port/postUpdateClaim?$parameters"
+        //val parameters = "userId=$personID&indexUpdateClaim=${claim.claimID}&newClaimDes=${claim.claimDes}&newClaimPho=${claim.claimPhoto}&newClaimLoc=${claim.claimPhoto}&newClaimSta=${status}"
+        //val url = "http://$ip:$port/postUpdateClaim?$parameters"
         val stringRequest = StringRequest(
             Request.Method.POST, url,
             { _ ->
                 //response to successful request
+                preferences.edit().apply { remove("updateClaim${
+                    url.split("=")[2].substring(
+                        0,
+                        1
+                    )
+                }"); commit() }
                 Log.d("UPDATE_CLAIM", "SERVER: SUCCESS.")
             },
             //response to unsuccessful request
             { error ->
+                preferences.edit().apply { putString("updateClaim${
+                    url.split("=")[2].substring(
+                        0,
+                        1
+                    )
+                }", url); commit() }
                 Log.d("UPDATE_CLAIM", "SERVER: FAILED TO CONNECT WITH $url")
                 Log.d("UPDATE_CLAIM", "SERVER: FAILED DUE TO ${error.message}")
                 //handle error if server down, note that not connected and put in que again? maybe some resting time.
                 //handle error if network low.
             }
         )
+        stringRequest.retryPolicy =
+            DefaultRetryPolicy(
+                5000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+            )
         queue?.add(stringRequest)
     }
 
     fun doWaitingRequests(){
-        Log.d("HANDLE_OFFLINE", "make offlined requests now")
-        while (isConnected && offlineRequests.isNotEmpty()){
-            offlineRequests.removeAt(0)()
+        Log.d(
+            "HANDLE_OFFLINE",
+            "make offlined requests now, there are ${offlinePostRequests.size} "
+        )
+        Log.d("HANDLE_OFFLINE", "${offlinePostRequests.toString()} ")
+        while (isConnected && offlinePostRequests.isNotEmpty()){
+            // stringRequest
+            val stringRequest = StringRequest(
+                Request.Method.POST, offlinePostRequests[0],
+                { _ ->
+                    offlinePostRequests.removeAt(0)
+                },
+                {
+                    Log.d("changePass", "SERVER: FAILED TO CONNECT")
+                    isConnected = false
+                    serverDown = true
+                })
+
+            queue?.add(stringRequest)
+        }
+        Log.d("HANDLE_OFFLINE", "make offlined requests now, there are ${offlineGetRequests.size} ")
+        Log.d("HANDLE_OFFLINE", "${offlineGetRequests.toString()} ")
+        while (isConnected && offlineGetRequests.isNotEmpty()){
+            offlineGetRequests.removeAt(0)()
+        }
+    }
+
+    fun checkServer(){
+        return try {
+            InetAddress.getByName(urlBase).isReachable(3000) //Replace with your name
+            serverDown = false
+        } catch (e: Exception) {
+            Log.d("CHECK_SERVER","${e.message}")
+            serverDown = true
+        }
+    }
+
+    fun checkForOldUpdates(){
+        //get old postrequest URLs from shared preferences and make requests
+        var oldUpdates = preferences.getStringSet("pastUsersCalls", null)
+        if(oldUpdates==null || oldUpdates.isEmpty()){
+            Log.d("CHECK_OLD_UPDATES","no old ones")
+            return
+        }
+        if(!isConnected){
+            Log.d("CHECK_OLD_UPDATES","putting olds in offlinePost there are ${oldUpdates.size}")
+            offlinePostRequests.addAll(0,oldUpdates)
+        }
+        while (isConnected && oldUpdates.isNotEmpty()){
+            // stringRequest
+            val stringRequest = StringRequest(
+                Request.Method.POST, oldUpdates.first(),
+                { _ ->
+                    Log.d("CHECK_OLD_UPDATES","successfully sendt old request")
+                    oldUpdates.remove(oldUpdates.first())
+                },
+                {
+                    Log.d("CHECK_OLD_UPDATES","error in sending old request, putting in offlineReqs")
+                    isConnected = false
+                    serverDown = true
+                    offlinePostRequests.addAll(0,oldUpdates)
+                    oldUpdates.remove(oldUpdates.first())
+                })
+            queue?.add(stringRequest)
         }
     }
 }

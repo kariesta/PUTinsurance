@@ -10,11 +10,13 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.lifecycle.Observer
 import com.example.putinsurance.R
 import com.example.putinsurance.data.Claim
 import com.example.putinsurance.utils.InjectorUtils
 import com.example.putinsurance.viewmodels.TabViewModel
+import com.google.android.gms.maps.SupportMapFragment
 import kotlinx.android.synthetic.main.photo_fragment.*
 
 class PhotoFragment : Fragment() {
@@ -41,19 +43,9 @@ class PhotoFragment : Fragment() {
 
         // When just photo is observed, it doesn't trigger when there is no photo (as the string remains 0)
         // Maybe it's better to observe only photo?
-        tabViewModel.photo.observe(viewLifecycleOwner, Observer<String> {
+        tabViewModel.photo.observe(viewLifecycleOwner, Observer<Bitmap> {
             Log.d("Fetch", "Setting new image resource")
-
-            // TODO
-            //photo_accident.setImageBitmap(it.toBitmap())
-
-            /*when (it) {
-                0 -> photo_accident.setImageResource(R.drawable.car_crash_0)
-                1 -> photo_accident.setImageResource(R.drawable.ic_baseline_add_24)
-                2 -> photo_accident.setImageResource(R.drawable.ic_launcher_foreground)
-                3 -> photo_accident.setImageResource(R.drawable.car_crash_0)
-                4 -> photo_accident.setImageResource(R.drawable.car_crash_0)
-            }*/
+            photo_accident.setImageBitmap(it)
         })
     }
 

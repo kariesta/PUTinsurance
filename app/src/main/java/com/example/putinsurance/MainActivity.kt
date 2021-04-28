@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.ConnectivityManager
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
@@ -35,27 +37,52 @@ class MainActivity : AppCompatActivity() {
     private val MAX_CLAIMS = 5
     private val REQUEST_IMAGE_CAPTURE = 1
     private var currentPhotoPath: String  = ""
-    //private lateinit var sharedPref: SharedPreferences
+    private lateinit var sharedPref: SharedPreferences
     private var currentPhotoFilename: String  = ""
+    private var imageBitmap: Bitmap?  = null
     private lateinit var dataRepository: DataRepository
     private lateinit var receiver: NetworkReceiver
     private val mapTag = "map"
     private val photoTag = "photo"
+    private lateinit var sharedPrefListner: SharedPreferences.OnSharedPreferenceChangeListener
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        sharedPref = getSharedPreferences("com.example.putinsurance", Context.MODE_PRIVATE)
         dataRepository = InjectorUtils.getDataRepository(this)
+        dataRepository.checkForOldUpdates()
         // Registers BroadcastReceiver to track network connection changes.
         receiver = NetworkReceiver(dataRepository)
         val filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)//ConnectivityManager.CONNECTIVITY_ACTION)
         registerReceiver(receiver, filter)
         Log.d("networked", "its listening!")
+        //when image-names are added/changed
+        sharedPrefListner = SharedPreferences.OnSharedPreferenceChangeListener{ _: SharedPreferences?,key:String ->
+            if(key.contains("claimID")){
+                Log.d("LISTEN FOR IMAGE", "image found is : $key, with ${key.last().toString().toInt()}")
+                dataRepository.updateImage(key.last().toString().toInt())
+            } }
+        sharedPref.registerOnSharedPreferenceChangeListener(sharedPrefListner)
+    }
+
+    override fun onResume() {
+        Log.d("RESUME_UPDATE","UPDATERING0")
+        super.onResume()
+        Log.d("RESUME_UPDATE","UPDATERING")
+        val resumeIntent = Intent(ConnectivityManager.CONNECTIVITY_ACTION)
+        //Trigger reciever to check if server is up.
+        receiver.onReceive(this,resumeIntent)
+        if(dataRepository.getUserId()!=null){
+            Log.d("RESUME_UPDATE","UPDATERING1")
+            dataRepository.getAllClaimsFromServer(false)
+        }
     }
 
 
     override fun onDestroy() {
         unregisterReceiver(receiver)
+        sharedPref.unregisterOnSharedPreferenceChangeListener(sharedPrefListner)
         super.onDestroy()
     }
 
@@ -174,12 +201,11 @@ class MainActivity : AppCompatActivity() {
     // TODO: check if SINGLETON of shared preferences and queue is recommended
     fun logIn(view: View) {
         // Shared Preferences
-        Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_tabFragment)
         val emailText =  findViewById<TextView>(R.id.editTextTextEmailAddress).text.toString()
         val passwordHash = passwordToHashMD5(findViewById<TextView>(R.id.editTextTextPassword).text.toString())
-        /*val loginCallBack =  { valid: Boolean,failReason: String ->
+        val loginCallBack =  { valid: Boolean,failReason: String ->
             if(valid){
-                dataRepository.getAllClaimsFromServer()
+                dataRepository.getAllClaimsFromServer(true)
                 Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_tabFragment)
             } else {
                 Toast.makeText(this,"login failed due to $failReason", Toast.LENGTH_SHORT).show()
@@ -187,7 +213,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // If email and password are in shared pref, nullpointerexception is not thrown
-        dataRepository.userValidation(emailText, passwordHash, loginCallBack)*/
+        dataRepository.userValidation(emailText, passwordHash, loginCallBack)
     }
 
 
@@ -236,9 +262,9 @@ class MainActivity : AppCompatActivity() {
 
     @Throws(IOException::class)
     private fun createImageFile(claimNumber: Int): File {
-        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
+        //val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
         val storageDir: File = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        currentPhotoFilename = "photo$claimNumber-$timeStamp"
+        currentPhotoFilename = "photo$claimNumber"//-$timeStamp"
         Log.d("UPLOADIMAGE","image of number $claimNumber with $currentPhotoFilename")
         return File.createTempFile(
             currentPhotoFilename, /* prefix */
@@ -293,6 +319,7 @@ class MainActivity : AppCompatActivity() {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             val f = File(currentPhotoPath)
             val imageView = findViewById<ImageView>(R.id.photoPreviewView)
+            imageBitmap = BitmapFactory.decodeFile(currentPhotoPath)
             imageView.setImageURI(Uri.fromFile(f))
         }
     }
@@ -302,14 +329,16 @@ class MainActivity : AppCompatActivity() {
 
         //collect all data from form
         val photoName = currentPhotoFilename
+        //val photoBitmap = imageBitmap
         val longString = findViewById<TextView>(R.id.LongitudeField).text.toString()
         val latString = findViewById<TextView>(R.id.LatitudeField).text.toString()
         val descString = findViewById<TextView>(R.id.DescriptionField).text.toString()
-        val numbOfClaims = dataRepository.getNumberOfClaims()
-        val imageBytes = File(currentPhotoPath).readBytes()
-        val imageString: String = android.util.Base64.encodeToString(imageBytes,android.util.Base64.DEFAULT)
+        val numbOfClaims = sharedPref.getInt("numberOfClaims", 0)
+        val imageBytes = if(currentPhotoPath!="")File(currentPhotoPath).readBytes() else null
+        val imageString: String = if(currentPhotoPath!="") android.util.Base64.encodeToString(imageBytes,android.util.Base64.URL_SAFE) else ""
 
         //Legger inn nye verdier
+        Log.d("ADD_CLAIM_ERROR?", "Now putting in addition of  numclam$numbOfClaims desc$descString pname$photoName lat$latString long$longString imString${if(imageString.length>6) imageString.substring(0,5) else "nothing"}")
         dataRepository.addClaim(numbOfClaims,Claim(numbOfClaims.toString(), descString, photoName,"$latString-$longString","0"),imageString)
         //dataRepository.insertClaimIntoSharedPreferences(numbOfClaims, descString, longString, latString, photoName,sharedPref)
         //dataRepository.sendClaimToServer(numbOfClaims, descString, longString, latString, photoName)
@@ -322,7 +351,7 @@ class MainActivity : AppCompatActivity() {
     @Suppress("UNUSED_PARAMETER")
     fun changePassword(view: View){
         Log.d("ADD_CLAIM", "this claim add has started")
-        val password: String = findViewById<TextView>(R.id.editTextTextPassword).text.toString()
+        val password: String = findViewById<TextView>(R.id.editNewPassword).text.toString()
         val passHash = passwordToHashMD5(password)
         val changePasswordCallBack = { success: Boolean,failReason: String ->
             if(success) {

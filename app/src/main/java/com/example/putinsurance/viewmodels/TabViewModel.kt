@@ -1,6 +1,8 @@
 package com.example.putinsurance.viewmodels
 
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Base64
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -14,7 +16,7 @@ class TabViewModel(private val dataRepository: DataRepository): ViewModel() {
     //var index : MutableLiveData<Int> = MutableLiveData()
 
     // for Kari. Observe this variable
-    var photo : MutableLiveData<String> = MutableLiveData()
+    var photo : MutableLiveData<Bitmap> = MutableLiveData()
     var location = MutableLiveData<String>()
 
     fun getNumOfTabs() =
@@ -40,8 +42,7 @@ class TabViewModel(private val dataRepository: DataRepository): ViewModel() {
         if (claim.claimLocation != location.value)
             location.value = claim.claimLocation
 
-        if (claim.claimPhoto != photo.value)
-            photo.value = claim.claimLocation
+        photo.value = dataRepository.getClaimImageFromPreferences(claim.claimID.toInt())
     }
 
 
