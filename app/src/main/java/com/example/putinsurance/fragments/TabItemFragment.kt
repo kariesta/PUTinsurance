@@ -59,6 +59,16 @@ class TabItemFragment : Fragment() {
             claimLocField.setText(it.claimLocation)
             claimDesField.setText(it.claimDes)
         })
+        /*tabViewModel.claim.observe(viewLifecycleOwner, Observer<Claim> {
+            Log.d("TI id", it.claimID)
+            Log.d("TI location", it.claimLocation)
+            Log.d("TI description", it.claimLocation)
+
+            claim = it
+            claimIdField.text = it.claimID
+            claimLocField.setText(it.claimLocation)
+            claimDesField.setText(it.claimDes)
+        })*/
 
         return root
     }
