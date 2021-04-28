@@ -269,14 +269,17 @@ class DataRepository private constructor(private val context: Context, private  
             val imageString = preferences.getString(photoname,null)
             val claimToUpdate = getClaimDataFromSharedPrefrences(claimId)
             if (pId!=null && imageString!=null){
+                val parameters = "userId=$pId&claimId=${claimToUpdate.claimID}&fileName=${claimToUpdate.claimPhoto}&imageStringBase64=${imageString}"
+                val url = "http://$ip:$port/postMethodUploadPhoto?$parameters"
+                preferences.edit().apply { putString("updateClaim${claimId}Photo",url); commit()}
                 if (isConnected) {
                     Log.d("UPDATE_IMAGE","now adding image for $claimId with strings ${imageString.length}")
-                    addImageToServer(claimToUpdate,pId,imageString)
+                    addImageToServer(url)
                 } else {
                     Log.d("UPDATE_IMAGE","LATER adding image for $claimId with strings ${imageString.length}")
                     offlineRequests.add {
                         Log.d("OFFLINEACT", "NOW addImageToServer$pId")
-                        addImageToServer(claimToUpdate,pId,imageString)
+                        addImageToServer(url)
                     }
                 }
             }
@@ -391,14 +394,17 @@ class DataRepository private constructor(private val context: Context, private  
         preferences.edit().apply(){ putString(claim.claimPhoto,imageString);commit()}
         insertClaimIntoSharedPreferences(numbOfClaims, claim)
         val personID = preferences.getString("personID", "na")
+        val parameters = "userId=$personID&indexUpdateClaim=${claim.claimID}&newClaimDes=${claim.claimDes}&newClaimPho=${claim.claimPhoto}&newClaimLoc=${claim.claimLocation}&newClaimSta=0"
+        val url = "http://$ip:$port/postInsertNewClaim?$parameters"
+        preferences.edit().apply { putString("addClaim${claim.claimID}Content",url); commit()}
         if(isConnected){
             Log.d("HANDLE_OFFLINE", "make request now!")
-            addClaimToServer(claim, personID)
+            addClaimToServer(url)
         } else {
             Log.d("HANDLE_OFFLINE", "make request later!")
             offlineRequests.add {
                 Log.d("OFFLINEACT","NOW addClaimToServer $claim  $personID")
-                addClaimToServer(claim, personID)
+                addClaimToServer(url)
             }
         }
     }
@@ -421,17 +427,17 @@ class DataRepository private constructor(private val context: Context, private  
 
     }
 
-    private fun addClaimToServer(claim: Claim, personID: String){
+    private fun addClaimToServer(url: String){
         val status = "0"
         //public String postInsertNewClaim(@RequestParam String userId, @RequestParam String indexUpdateClaim, @RequestParam String newClaimDes, @RequestParam String newClaimPho, @RequestParam String newClaimLoc, @RequestParam String newClaimSta) {
-        val parameters = "userId=$personID&indexUpdateClaim=${claim.claimID}&newClaimDes=${claim.claimDes}&newClaimPho=${claim.claimPhoto}&newClaimLoc=${claim.claimLocation}&newClaimSta=$status"
-        val url = "http://$ip:$port/postInsertNewClaim?$parameters"
+        //val parameters = "userId=$personID&indexUpdateClaim=${claim.claimID}&newClaimDes=${claim.claimDes}&newClaimPho=${claim.claimPhoto}&newClaimLoc=${claim.claimLocation}&newClaimSta=$status"
+        //val url = "http://$ip:$port/postInsertNewClaim?$parameters"
         Log.d("ADD_CLAIM_ERROR?", "sending to server with $url")
         val stringRequest = StringRequest(
             Request.Method.POST, url,
             { _ ->
                 //response to successful request
-                Log.d("ADD_CLAIM", "SERVER: SUCCESS, added ${claim.toString()}")
+                Log.d("ADD_CLAIM", "SERVER: SUCCESSF added a claim}")
             },
             //response to unsuccessful request
             { error ->
@@ -446,17 +452,17 @@ class DataRepository private constructor(private val context: Context, private  
     }
 
     //	public String postMethodUploadPhoto(@RequestParam String userId, @RequestParam String claimId, @RequestParam String fileName, @RequestParam String imageStringBase64) {
-    private fun addImageToServer(claim: Claim, personID: String, imageString: String){
+    private fun addImageToServer(url: String){//claim: Claim, personID: String, imageString: String){
         //read it to stringbase64
-        queue = Volley.newRequestQueue(context)
-        val parameters = "userId=$personID&claimId=${claim.claimID}&fileName=${claim.claimPhoto}&imageStringBase64=${imageString}"
-        val url = "http://$ip:$port/postMethodUploadPhoto?$parameters"
+        //queue = Volley.newRequestQueue(context)
+        //val parameters = "userId=$personID&claimId=${claim.claimID}&fileName=${claim.claimPhoto}&imageStringBase64=${imageString}"
+        //val url = "http://$ip:$port/postMethodUploadPhoto?$parameters"
         Log.d("UPDATE_IMAGE??", "now sending to $url")
         val stringRequest = StringRequest(
             Request.Method.POST, url,
             { _ ->
                 //response to successful request
-                Log.d("ADD_CLAIM", "SERVER: SUCCESS.$imageString")
+                Log.d("ADD_CLAIM", "SERVER: SUCCESS.")
             },
             //response to unsuccessful request
             { error ->
@@ -476,23 +482,17 @@ class DataRepository private constructor(private val context: Context, private  
     ){
         val status = updateClaimInSharedPreferences(claim)
         val personID = preferences.getString("personID", "na")
+        val parameters = "userId=$personID&indexUpdateClaim=${claim.claimID}&newClaimDes=${claim.claimDes}&newClaimPho=${claim.claimPhoto}&newClaimLoc=${claim.claimPhoto}&newClaimSta=${status}"
+        val url = "http://$ip:$port/postUpdateClaim?$parameters"
+        preferences.edit().apply { putString("updateClaim${claim.claimID}",url); commit()}
         if(isConnected){
             Log.d("HANDLE_OFFLINE", "make request now!")
-            updateClaimInServer(claim, status, personID)
-            if (imageString != null){
-                addImageToServer(claim, personID, imageString)
-            }
+            updateClaimInServer(url)
         } else {
             Log.d("HANDLE_OFFLINE", "make request later!")
             offlineRequests.add {
                 Log.d("OFFLINEACT","NOW updateClaimInServer $claim $status $personID")
-                updateClaimInServer(claim, status, personID)
-            }
-            if (imageString != null){
-                offlineRequests.add {
-                    Log.d("OFFLINEACT","NOW addImageToServer $claim  $personID $imageString")
-                    addImageToServer(claim, personID, imageString)
-                }
+                updateClaimInServer(url)
             }
         }
     }
@@ -510,10 +510,10 @@ class DataRepository private constructor(private val context: Context, private  
         return prevStatus+1
     }
 
-    private fun updateClaimInServer(claim: Claim, status: Int, personID: String){
+    private fun updateClaimInServer(url: String){
         //public String postInsertNewClaim(@RequestParam String userId, @RequestParam String indexUpdateClaim, @RequestParam String newClaimDes, @RequestParam String newClaimPho, @RequestParam String newClaimLoc, @RequestParam String newClaimSta) {
-        val parameters = "userId=$personID&indexUpdateClaim=${claim.claimID}&newClaimDes=${claim.claimDes}&newClaimPho=${claim.claimPhoto}&newClaimLoc=${claim.claimPhoto}&newClaimSta=${status}"
-        val url = "http://$ip:$port/postUpdateClaim?$parameters"
+        //val parameters = "userId=$personID&indexUpdateClaim=${claim.claimID}&newClaimDes=${claim.claimDes}&newClaimPho=${claim.claimPhoto}&newClaimLoc=${claim.claimPhoto}&newClaimSta=${status}"
+        //val url = "http://$ip:$port/postUpdateClaim?$parameters"
         val stringRequest = StringRequest(
             Request.Method.POST, url,
             { _ ->
@@ -536,6 +536,59 @@ class DataRepository private constructor(private val context: Context, private  
         Log.d("HANDLE_OFFLINE", "${offlineRequests.toString()} ")
         while (isConnected && offlineRequests.isNotEmpty()){
             offlineRequests.removeAt(0)()
+        }
+    }
+
+    fun checkForOldUpdates(){
+        if(isConnected){
+            Log.d("HANDLE_OFFLINE", "make request now!")
+            //les urler og kall dem, deretter rens dem.
+            var i = 0
+            while (isConnected && i<5){
+                var url = preferences.getString("updateClaim${i}",null)
+                if(url != null){
+                    updateClaimInServer(url)
+                }
+                url = preferences.getString("addClaim${i}Content",null)
+                if(url != null){
+                    addClaimToServer(url)
+                }
+                url = preferences.getString("updateClaim${i}Photo",null)
+                if(url != null){
+                    addImageToServer(url)
+                }
+            }
+            //updateClaimInServer(url)
+        } else {
+            Log.d("HANDLE_OFFLINE", "make request later!")
+            for ( i in 0.until(5)){
+                var url = preferences.getString("updateClaim${i}",null)
+                if(url != null){
+                    offlineRequests.add {
+                        Log.d("OFFLINEACT","NOW updateClaimInServer")// $claim $status $personID")
+                        updateClaimInServer(url)
+                        preferences.edit().remove("updateClaim${i}")
+                    }
+                }
+                url = preferences.getString("addClaim${i}Content",null)
+                if(url != null){
+                    offlineRequests.add {
+                        Log.d("OFFLINEACT","NOW updateClaimInServer")// $claim $status $personID")
+                        addClaimToServer(url)
+                        preferences.edit().remove("addClaim${i}Content")
+
+                    }
+                }
+                url = preferences.getString("updateClaim${i}Photo",null)
+                if(url != null){
+                    offlineRequests.add {
+                        Log.d("OFFLINEACT","NOW updateClaimInServer")// $claim $status $personID")
+                        addImageToServer(url)
+                        preferences.edit().remove("updateClaim${i}Photo")
+
+                    }
+                }
+            }
         }
     }
 }

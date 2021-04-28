@@ -29,7 +29,7 @@ class StateViewModel(private val dataRepository: DataRepository) : ViewModel() {
     fun setIndex(index: Int) {
         _index.value = index
         val claim = dataRepository.getClaimDataFromSharedPrefrences(5 - index)
-        Log.d("PICK_TAB", claim.toString())
+        Log.d("PICK_TAB", "$$index ${claim.toString()}")
         _loc.value = claim.claimLocation
         _desc.value = claim.claimDes
         _id.value = claim.claimID

@@ -51,6 +51,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         sharedPref = getSharedPreferences("com.example.putinsurance", Context.MODE_PRIVATE)
         dataRepository = InjectorUtils.getDataRepository(this)
+        dataRepository.checkForOldUpdates()
         // Registers BroadcastReceiver to track network connection changes.
         receiver = NetworkReceiver(dataRepository)
         val filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)//ConnectivityManager.CONNECTIVITY_ACTION)
@@ -330,8 +331,8 @@ class MainActivity : AppCompatActivity() {
         val latString = findViewById<TextView>(R.id.LatitudeField).text.toString()
         val descString = findViewById<TextView>(R.id.DescriptionField).text.toString()
         val numbOfClaims = sharedPref.getInt("numberOfClaims", 0)
-        val imageBytes = File(currentPhotoPath).readBytes()
-        val imageString: String = android.util.Base64.encodeToString(imageBytes,android.util.Base64.URL_SAFE)
+        val imageBytes = if(currentPhotoPath!="")File(currentPhotoPath).readBytes() else null
+        val imageString: String = if(currentPhotoPath!="") android.util.Base64.encodeToString(imageBytes,android.util.Base64.URL_SAFE) else ""
 
         //Legger inn nye verdier
         Log.d("ADD_CLAIM_ERROR?", "Now putting in addition of  numclam$numbOfClaims desc$descString pname$photoName lat$latString long$longString imString${if(imageString.length>6) imageString.substring(0,5) else "nothing"}")
@@ -347,7 +348,7 @@ class MainActivity : AppCompatActivity() {
     @Suppress("UNUSED_PARAMETER")
     fun changePassword(view: View){
         Log.d("ADD_CLAIM", "this claim add has started")
-        val password: String = findViewById<TextView>(R.id.editTextTextPassword).text.toString()
+        val password: String = findViewById<TextView>(R.id.editNewPassword).text.toString()
         val passHash = passwordToHashMD5(password)
         val changePasswordCallBack = { success: Boolean,failReason: String ->
             if(success) {
