@@ -71,7 +71,6 @@ class DataRepository private constructor(
         return preferences.getString("personID", null)
     }
 
-    // TODO: check if it is really necessary to validate by sharedpref as all user data is deleted when user logs out
     private fun validateUserBySharedPreferences(
         email: String,
         passHash: String,
@@ -103,7 +102,6 @@ class DataRepository private constructor(
 
     private fun sendLoginRequest(url: String, callback: (Boolean, String) -> Any) {
         // Request queue
-        // TODO: Check if we can only have one queue per activity
         //queue = Volley.newRequestQueue(context)
 
         // jsonRequest
@@ -126,7 +124,6 @@ class DataRepository private constructor(
                 //startActivity(context,Intent(context, TabActivity::class.java), null)
             },
             {
-                // TODO: check if due to incorrect password or no contact with server (network/server down)
                 Log.d("logIn", "SERVER: FAILED TO CONNECT")
                 callback(false, "failed to connect to server")
                 serverDown = true
@@ -251,7 +248,6 @@ class DataRepository private constructor(
     }
 
     //takes a call back method that adds the values to shared preference.
-    //TODO WHAT IF NEW CLAIM IS MADE OR EDITED BEFORE FETCHED CLAIM FROM SERVER? A status number to compare versions? a conflicting claims activity?
     fun getAllClaimsFromServer(essensial: Boolean){
         //send the request
         val personId = getUserId()
@@ -275,7 +271,6 @@ class DataRepository private constructor(
                 insertServerClaimsIntoSharedPref(response)
             },
             {
-                // TODO: check if due to incorrect password or no contact with server (network/server down)
                 Log.d("GET_CLAIMS", "SERVER: FAILED DUE TO: ${it.message}")
                 serverDown = true
                 isConnected = false
@@ -337,7 +332,7 @@ class DataRepository private constructor(
 
     fun getClaimImageFromServer(claimId: Int) {
         val photoname = preferences.getString("claimPhoto$claimId", null)
-        if (photoname != null) {  //TODO check for existing files:  && noFiles(photoname)){
+        if (photoname != null) {
             val url = "${urlBase}getMethodDownloadPhoto?fileName=$photoname"
             if (isConnected) {
                 sendGetImageRequest(url, photoname)
@@ -367,7 +362,6 @@ class DataRepository private constructor(
 
             },
             {
-                // TODO: check if due to incorrect password or no contact with server (network/server down)
                 Log.d("GET_IMAGE", "SERVER: FAILED DUE TO: ${it.message}")
                 serverDown = true
                 isConnected = false

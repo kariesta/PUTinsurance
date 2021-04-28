@@ -40,7 +40,6 @@ class TabFragment : Fragment() {
         // ViewModel
         //val viewmodel : TabViewModel = ViewModelProviders.of()
 
-        // TODO: check what context should be used
         val factory = InjectorUtils.provideTabViewModelFactory(this.requireActivity())
         tabViewModel = ViewModelProvider(this.requireActivity(), factory).get(TabViewModel::class.java)
         // Adapter

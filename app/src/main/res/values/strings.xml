@@ -5,7 +5,6 @@
     <string name="password_hint">password</string>
     <string name="log_in_button">Log in</string>
     <string name="log_out_button">Log out</string>
-    <string name="textView">textView</string>
     <string name="Description" />
     <string name="Longitude" />
     <string name="Latitude" />
@@ -14,18 +13,10 @@
     <string name="LatitudeFieldLabel">Long:</string>
     <string name="DescriptionHint">write a description here</string>
     <string name="submitClaimButton">save claim</string>
-    <string name="addingClaimButton">add claim</string>
-    <string name="title_activity_maps">Map</string>
-    <string name="to_map">To map</string>
-    <string name="title_activity_main2">MainActivity2</string>
-    <string name="tab_text_1">Tab 1</string>
-    <string name="tab_text_2">Tab 2</string>
-    <string name="tab_title">Claims</string>
     <string name="new_claim">New claim</string>
     <string name="claimFormImageDescription">Image for incident</string>
     <string name="passwordContent">xpta</string>
     <string name="emailContent">joe@gmail.com</string>
-    <string name="settings">Settings</string>
     <!-- Preference Titles -->
     <string name="accesss_header">access</string>
     <string name="sync_header">Sync</string>
@@ -34,10 +25,6 @@
     <string name="gpsAllowance">gps</string>
     <string name="cameraAllowance">cameraroll</string>
     <string name="sync_title">Only sync data using wifi</string>
-    <string name="attachment_title">Download incoming attachments</string>
-    <string name="attachment_summary_on">Automatically download attachments for incoming emails
-    </string>
-    <string name="attachment_summary_off">Only download attachments when manually requested</string>
 
     <string name="changepassword">password</string>
     <string name="new_password_hint">new password</string>

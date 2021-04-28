@@ -197,7 +197,6 @@ class MainActivity : AppCompatActivity() {
     // https://stackoverflow.com/questions/11278507/android-widget-switch-on-off-event-listener
 
     /**Login functions*/
-    // TODO: check if SINGLETON of shared preferences and queue is recommended
     fun logIn(view: View) {
         // Shared Preferences
         val emailText =  findViewById<TextView>(R.id.editTextTextEmailAddress).text.toString()
@@ -228,7 +227,6 @@ class MainActivity : AppCompatActivity() {
         return BigInteger(1, bytes).toString(16).padStart(32, '0')
     }
 
-    // TODO: delete the rest of the saved data. NB: Check first that all have been pushed to server!
     fun logOut(view: View) {
         dataRepository.deleteFromSharedPreferences()
         Log.d("logIn", "LOGGING OUT")
@@ -254,7 +252,6 @@ class MainActivity : AppCompatActivity() {
 
 
     /** Claim form functions*/
-    // TODO (not baseline func) chose photo from gallery
     @Suppress("UNUSED_PARAMETER")
     fun takePhoto(view: View) {
         dispatchTakePictureIntent()

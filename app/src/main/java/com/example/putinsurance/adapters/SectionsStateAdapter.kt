@@ -20,7 +20,6 @@ class SectionsStateAdapter(private val numOfTabs: Int, fragment : Fragment) :
         return TabItemFragment.newInstance(position + 1)
     }
 
-    //TODO: update based on number of claims
     override fun getItemCount(): Int {
         return numOfTabs
     }
